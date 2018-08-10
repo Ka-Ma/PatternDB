@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">Pattern DB</string>
+
+    <string name="btn_add">Add</string>
+    <string name="btn_search">Search</string>
+    <string name="btn_editLists">Edit Lists</string>
+    <string name="btn_exit">Exit</string>
+
+    <string name="lbl_patternNumber">Pattern Number</string>
+    <string name="lbl_brand">Brand</string>
+    <string name="lbl_sizeRange">Size Range</string>
+    <string name="lbl_category">Category/s</string>
+    <string name="lbl_description">Description</string>
+    <string name="btn_ocr">OCR</string>
+    <string name="lbl_coverImg">Cover Image</string>
+    <string name="lbl_backImg">Back Image</string>
+    <string name="btn_save">Save</string>
+    <string name="btn_back">Back</string>
+
+    <string name="lbl_or">or</string>
+    <string name="lbl_keyword">Keyword/s</string>
+    <string name="lbl_search_help">NOTE: if you enter a pattern number <u>and</u> keywords all the patterns that have the pattern number in their pattern number AND any of the keywords in their description.</string>
+
+    <string name="btn_delete">Delete</string>
+    <string name="btn_edit">Edit</string>
+
+    <string name="btn_brandsList">Brands List</string>
+    <string name="btn_categoriesList">Categories List</string>
+
+
+
+</resources>

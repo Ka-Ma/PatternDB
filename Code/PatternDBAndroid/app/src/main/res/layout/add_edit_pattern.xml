@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <GridLayout
+        android:id="@+id/gridLayout_addEdit"
+        android:layout_width="387dp"
+        android:layout_height="275dp"
+        android:paddingHorizontal="15dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <EditText
+            android:id="@+id/text_patternNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="39dp"
+            android:layout_column="1"
+            android:layout_row="0"
+            android:ems="10"
+            android:inputType="text" />
+
+        <TextView
+            android:id="@+id/label_patternNumber"
+            android:layout_width="107dp"
+            android:layout_height="18dp"
+            android:layout_column="0"
+            android:layout_row="0"
+            android:labelFor="@id/text_patternNumber"
+            android:text="@string/lbl_patternNumber" />
+
+        <Spinner
+            android:id="@+id/spinner_brand"
+            android:layout_width="218dp"
+            android:layout_column="1"
+            android:layout_row="1" />
+
+        <TextView
+            android:id="@+id/label_brand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="1"
+            android:labelFor="@id/spinner_brand"
+            android:text="@string/lbl_brand" />
+
+        <EditText
+            android:id="@+id/text_size"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_row="2"
+            android:ems="10"
+            android:inputType="text" />
+
+        <TextView
+            android:id="@+id/label_size"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="2"
+            android:labelFor="@id/text_size"
+            android:text="@string/lbl_sizeRange"
+            tools:layout_editor_absoluteX="3dp" />
+
+        <Spinner
+            android:id="@+id/spinner_category"
+            android:layout_width="217dp"
+            android:layout_height="23dp"
+            android:layout_column="1"
+            android:layout_row="3" />
+
+        <TextView
+            android:id="@+id/label_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="3"
+            android:labelFor="@id/spinner_category"
+            android:text="@string/lbl_category" />
+
+        <EditText
+            android:id="@+id/text_description"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            android:layout_column="1"
+            android:layout_row="4"
+            android:ems="10"
+            android:inputType="textMultiLine" />
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_column="0"
+            android:layout_row="4">
+
+            <TextView
+                android:id="@+id/label_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:labelFor="@id/text_description"
+                android:text="@string/lbl_description"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/button_ocr"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_ocr"
+                app:layout_constraintLeft_toLeftOf="@id/label_description"
+                app:layout_constraintTop_toBottomOf="@id/label_description" />
+
+        </android.support.constraint.ConstraintLayout>
+    </GridLayout>
+
+    <Button
+        android:id="@+id/button_save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_save"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        />
+
+    <Button
+        android:id="@+id/button_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_back"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <GridLayout
+        android:id="@+id/layoutImages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:columnCount="2"
+        android:orientation="horizontal"
+        android:padding="5dp"
+        app:layout_constraintBottom_toTopOf="@id/button_back"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/gridLayout_addEdit"
+        app:layout_constraintVertical_bias="0.0">
+
+        <Button
+            android:id="@+id/button_backImg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_row="0"
+            android:text="@string/lbl_backImg" />
+
+        <Button
+            android:id="@+id/button_coverImg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="0"
+            android:text="@string/lbl_coverImg" />
+
+        <ImageView
+            android:id="@+id/imgView_backImg"
+            android:layout_width="115dp"
+            android:layout_height="115dp"
+            android:layout_column="1"
+            android:layout_row="1"
+            android:textAlignment="viewEnd"
+            android:contentDescription="@string/lbl_backImg"
+            app:srcCompat="@android:drawable/gallery_thumb"
+            />
+
+        <ImageView
+            android:id="@+id/imgView_coverImg"
+            android:layout_width="115dp"
+            android:layout_height="115dp"
+            android:layout_column="0"
+            android:layout_row="1"
+            android:contentDescription="@string/lbl_coverImg"
+            app:srcCompat="@android:drawable/gallery_thumb"
+            />
+    </GridLayout>
+
+
+</android.support.constraint.ConstraintLayout>
