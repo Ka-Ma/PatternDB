@@ -1,10 +1,15 @@
 package kama.patterndb;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -17,6 +22,9 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.IOException;
+
 import static android.app.Activity.RESULT_OK;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -26,6 +34,8 @@ import static java.lang.Boolean.TRUE;
  */
 
 public class AddFragment extends Fragment {
+    //can i have the view here?
+    View v;
 
     //members
     Button mSaveButton;
@@ -43,8 +53,13 @@ public class AddFragment extends Fragment {
 
     DBHelper mydb;
 
+    private static final String TAG = "myApp";
     private static final int CAMERA_REQUEST_BACK = 1;
     private static final int CAMERA_REQUEST_FRONT = 2;
+    private Uri mCoverImageUri;
+    private Uri mBackImageUri;
+    private String mCoverImageFileName;
+    private String mBackImageFileName;
 
     public static AddFragment newInstance(){
         AddFragment f = new AddFragment();
@@ -61,7 +76,7 @@ public class AddFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View v = inflater.inflate(R.layout.add_edit_pattern, null);
+        v = inflater.inflate(R.layout.add_edit_pattern, null);
 
         return v;
     }
@@ -106,13 +121,30 @@ public class AddFragment extends Fragment {
             public void onClick(View v) {
                 try {
                     Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                    Log.d("myApp", "about to start camera activity");
-                    startActivityForResult(cameraIntent, CAMERA_REQUEST_FRONT);
-                    //TODO need to be able to edit image for accepting
-                    //TODO need to be able to set save location and file name
-                } catch (Exception e) {
-                    Toast.makeText(v.getContext().getApplicationContext(), "Couldn't load photo", Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "about to start camera activity where in the file will saved locally");
+                    Log.d(TAG, "camera intent has " + cameraIntent.toString());
+                    if (cameraIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+                        File photoFile = null;
+                        try {
+                            photoFile = createImageFile("cover");
+                        } catch (IOException ex) {
+                            Log.d(TAG, "oh no, file for photo could not be made: " + ex);
+                        }
+
+                        if (photoFile != null) {
+                            Uri photoURI = FileProvider.getUriForFile(v.getContext(), "kama.patterndb.provider", photoFile);
+                            Log.d(TAG, "photoURI is " + photoURI.toString());
+                            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI); //FIXME this doesn't seem to get sent across
+                            Log.d(TAG, "camera intent now has " + cameraIntent.toString());
+                            startActivityForResult(cameraIntent, CAMERA_REQUEST_FRONT);
+                        }
+
+                    }
+                }catch (Exception e) {
+                            Log.d(TAG, "tried to start intent and there was an exception somewhere in there that says: "+e);
+                            Toast.makeText(v.getContext().getApplicationContext(), "Exception: "+ e, Toast.LENGTH_LONG).show();
                 }
+
             }
         });
 
@@ -122,10 +154,10 @@ public class AddFragment extends Fragment {
             public void onClick(View v) {
                 try {
                     Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    Log.d("myApp", "about to start camera activity");
+                    Log.d(TAG, "about to start camera activity the original straightforward way");
+                    Log.d(TAG, "camera intent has "+ cameraIntent.toString());
                     startActivityForResult(cameraIntent, CAMERA_REQUEST_BACK);
-                    //TODO need to be able to edit image for accepting
-                    //TODO need to be able to set save location and file name
+
                 } catch (Exception e) {
                     Toast.makeText(v.getContext().getApplicationContext(), "Couldn't load photo", Toast.LENGTH_LONG).show();
                 }
@@ -138,7 +170,7 @@ public class AddFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(mBackImage != null){
-                    Log.d("myApp", "clicked the OCR button");
+                    Log.d(TAG, "clicked the OCR button");
                     Toast.makeText(v.getContext(), "I will send you off to select part of an image to scan for text", Toast.LENGTH_SHORT).show();
                     //TODO OCR STUFF
                     //do some ocr'ing
@@ -190,14 +222,14 @@ public class AddFragment extends Fragment {
     public void onStart(){
         super.onStart();
 
-        Log.d("myApp", " frag started");
+        Log.d(TAG, " frag started");
     }
 
     @Override
     public void onResume(){
         super.onResume();
 
-        Log.d("myApp", "resumed  fragment");
+        Log.d(TAG, "resumed  fragment");
 
         //if anything needs refreshing do it here
     }
@@ -206,26 +238,49 @@ public class AddFragment extends Fragment {
     public void onPause(){
         super.onPause();
 
-        Log.d("myApp", "paused  frag");
+        Log.d(TAG, "paused  frag");
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
-        Log.d("myApp", "got activity result for camera");
-        Log.d("myApp", "request code is "+ requestCode+ " and result code is "+resultCode);
+        Log.d(TAG, "got activity result for camera");
+        Log.d(TAG, "request code is "+ requestCode+ " and result code is "+resultCode + " where OK is " + RESULT_OK);
 
         if(resultCode == RESULT_OK){
-            Log.d("myApp", "image captured");
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            Log.d(TAG, "image captured");
+            Log.d(TAG, "data has " + data.toString());
+
             if(requestCode == CAMERA_REQUEST_BACK){
-                Log.d("myApp", "the codes for back are good");
+                Bundle extras = data.getExtras(); //TODO replace this when back changed to match front
+                Bitmap imageBitmap = (Bitmap) extras.get("data");
+                Log.d(TAG, "the codes for back are good");
                 mBackImage.setImageBitmap(imageBitmap);
+                mBackImageUri = data.getData();
             }else if (requestCode == CAMERA_REQUEST_FRONT){
-                Log.d("myApp", "the codes for front are good");
+                Log.d(TAG, "the codes for front are good");
+                //Glide.with(this).load(mCoverImageFileName).into(mCoverImage);
+                Bitmap imageBitmap = BitmapFactory.decodeFile(mCoverImageFileName);
                 mCoverImage.setImageBitmap(imageBitmap);
             }
         }
+    }
+
+    private File createImageFile(String side) throws IOException {
+        String imageFileName = mPatternNum.getText().toString() + "_" + side + "_";
+        Log.d(TAG, "filename is "+ imageFileName);
+        File storageDir = v.getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        Log.d(TAG, "storageDir is "+ storageDir);
+        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
+
+        Log.d("mApp", "file just created is "+ image.toString());
+
+        if(side.equals("cover")){
+            mCoverImageFileName = image.getAbsolutePath();
+        }else if(side.equals("back")){
+            mBackImageFileName = image.getAbsolutePath();
+        }
+
+        return image;
     }
 
 }
