@@ -202,7 +202,7 @@ public class AddFragment extends Fragment {
         mCoverImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditImageFragment editImage = EditImageFragment.newInstance(mCoverImageFileName);
+                EditImageFragment editImage = EditImageFragment.newInstance(mCoverImageUri);
 
                 FragmentTransaction ft =  getFragmentManager().beginTransaction();
                 ft.replace(R.id.fragment_container, editImage);
