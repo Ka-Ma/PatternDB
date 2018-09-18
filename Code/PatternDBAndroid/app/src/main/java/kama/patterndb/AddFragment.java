@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -32,6 +33,7 @@ import com.isseiaoki.simplecropview.CropImageView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
 import static android.media.effect.EffectFactory.EFFECT_CROP;
@@ -44,10 +46,13 @@ import static java.lang.Boolean.TRUE;
  */
 
 public class AddFragment extends Fragment {
-    //can i have the view here?
+    //logging purposes
+    private static final String TAG = "myApp";
+
+    //making view available all over
     View v;
 
-    //members
+    //layout members
     Button mSaveButton;
     Button mBackButton;
     Button mOCRButton;
@@ -61,15 +66,19 @@ public class AddFragment extends Fragment {
     ImageView mCoverImage;
     ImageView mBackImage;
 
+    //other stuff
     DBHelper mydb;
 
-    private static final String TAG = "myApp";
+    //intent request codes
     private static final int CAMERA_REQUEST_BACK = 1;
     private static final int CAMERA_REQUEST_FRONT = 2;
+    private static final int CROP_REQUEST_COVER = 3;
+
     private Uri mCoverImageUri;
     private Uri mBackImageUri;
     private String mCoverImageFileName;
     private String mBackImageFileName;
+
 
     public static AddFragment newInstance(){
         AddFragment f = new AddFragment();
@@ -95,175 +104,16 @@ public class AddFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mydb = new DBHelper(getActivity());
-        View v = getActivity().findViewById(R.id.fragment_container);
 
-        mPatternNum = (EditText) v.findViewById(R.id.text_patternNumber);
-        mPatternNum.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        bindMembers();
 
-            }
+        //for testing purposes:
+        mydb.insertBrand("TestB1");
+        mydb.insertCategory("TestC1");
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                //TODO enable all the things that rely on a pattern number being there
-                if(!mPatternNum.getText().toString().equals("")){
-                    mOCRButton.setEnabled(TRUE);
-                    mBackImageButton.setEnabled(TRUE);
-                    mCoverImageButton.setEnabled(TRUE);
-                }else{
-                    mOCRButton.setEnabled(FALSE);
-                    mBackImageButton.setEnabled(FALSE);
-                    mCoverImageButton.setEnabled(FALSE);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-        mBrand = (Spinner) v.findViewById(R.id.spinner_brand);
-        mDescription = (EditText) v.findViewById(R.id.text_description);
-        mBackImage = (ImageView) v.findViewById(R.id.imgView_backImg);
-        mCoverImage = (ImageView) v.findViewById(R.id.imgView_coverImg);
-
-        mCoverImageButton = (Button) v.findViewById(R.id.button_coverImg);
-        mCoverImageButton.setEnabled(FALSE);
-        mCoverImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                    Log.d(TAG, "about to start camera activity where in the file will saved locally");
-                    Log.d(TAG, "camera intent has " + cameraIntent.toString());
-                    if (cameraIntent.resolveActivity(getActivity().getPackageManager()) != null) {
-                        File photoFile = null;
-                        try {
-                            photoFile = createImageFile("cover");
-                        } catch (IOException ex) {
-                            Log.d(TAG, "oh no, file for photo could not be made: " + ex);
-                        }
-
-                        if (photoFile != null) {
-                            Uri photoURI = FileProvider.getUriForFile(v.getContext(), "kama.patterndb.provider", photoFile);
-                            mCoverImageUri = photoURI;
-                            Log.d(TAG, "photoURI is " + photoURI.toString());
-                            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                            Log.d(TAG, "camera intent now has " + cameraIntent.toString());
-                            startActivityForResult(cameraIntent, CAMERA_REQUEST_FRONT);
-                        }
-
-                    }
-                }catch (Exception e) {
-                            Log.d(TAG, "tried to start intent and there was an exception somewhere in there that says: "+e);
-                            Toast.makeText(v.getContext().getApplicationContext(), "Exception: "+ e, Toast.LENGTH_LONG).show();
-                }
-
-            }
-        });
-
-        mBackImageButton = (Button) v.findViewById(R.id.button_backImg);
-        mBackImageButton.setEnabled(FALSE);
-        mBackImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                    Log.d(TAG, "about to start camera activity where in the file will saved locally");
-                    Log.d(TAG, "camera intent has " + cameraIntent.toString());
-                    if (cameraIntent.resolveActivity(getActivity().getPackageManager()) != null) {
-                        File photoFile = null;
-                        try {
-                            photoFile = createImageFile("back");
-                        } catch (IOException ex) {
-                            Log.d(TAG, "oh no, file for photo could not be made: " + ex);
-                        }
-
-                        if (photoFile != null) {
-                            Uri photoURI = FileProvider.getUriForFile(v.getContext(), "kama.patterndb.provider", photoFile);
-                            mBackImageUri = photoURI;
-                            Log.d(TAG, "photoURI is " + photoURI.toString());
-                            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                            Log.d(TAG, "camera intent now has " + cameraIntent.toString());
-                            startActivityForResult(cameraIntent, CAMERA_REQUEST_BACK);
-                        }
-
-                    }
-                }catch (Exception e) {
-                    Log.d(TAG, "tried to start intent and there was an exception somewhere in there that says: "+e);
-                    Toast.makeText(v.getContext().getApplicationContext(), "Exception: "+ e, Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
-        mCoverImage = (ImageView) v.findViewById(R.id.imgView_coverImg);
-        mCoverImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EditImageFragment editImage = EditImageFragment.newInstance(mCoverImageUri);
-
-                FragmentTransaction ft =  getFragmentManager().beginTransaction();
-                ft.replace(R.id.fragment_container, editImage);
-                ft.addToBackStack(null);
-                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-                ft.commit();
-            }
-        });
-
-        mOCRButton = (Button) v.findViewById(R.id.button_ocr);
-        mOCRButton.setEnabled(FALSE);
-        mOCRButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(mBackImage != null){
-                    Log.d(TAG, "clicked the OCR button");
-                    Toast.makeText(v.getContext(), "I will send you off to select part of an image to scan for text", Toast.LENGTH_SHORT).show();
-                    //TODO OCR STUFF
-                    //do some ocr'ing
-                    //select part of back image to ocr scan
-                    //convert image to text and save in description edittext
-                }
-            }
-        });
-
-        mSaveButton = (Button) v.findViewById(R.id.button_save);
-        mSaveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String patternNum = mPatternNum.getText().toString();
-                int brandID;
-                String size;
-                int[] category;
-                String description;
-                String cover = "location of cover image";
-                String back = "location of back image";
-
-                //there are some/most elements that need to be complete before the pattern can be saved.
-                if(patternNum.equals("")){
-                    Toast.makeText(v.getContext(),"Please enter a pattern number", Toast.LENGTH_SHORT).show();
-                }else{
-                    //String num, int brand, String sizeRange, int[] category, String description, String coverImg, String backImg
-                    category = new int[] {1,2}; //TODO get list of category ids
-                    //TODO get and set the various variables to pass to the pattern
-                    Pattern pattern = new Pattern(patternNum, 1, "Size", category, "description", "directory for cover image", "directory for back image");
-                    Long id = mydb.insertPattern(pattern);
-                    Toast.makeText(v.getContext(), "pattern "+id+" saved", Toast.LENGTH_SHORT).show();
-                    //TODO clear or refresh the add screen to empty fields
-                }
-            }
-        });
-
-        mBackButton = (Button) v.findViewById(R.id.button_back);
-        mBackButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //TODO need to go back to previous fragment, also need to activate that ability in the native back button.
-                getFragmentManager().popBackStack();
-            }
-        });
-
+        setDependents(FALSE);
+        setListeners();
+        loadData();
     }
 
     @Override
@@ -289,6 +139,213 @@ public class AddFragment extends Fragment {
         Log.d(TAG, "paused  frag");
     }
 
+    private void bindMembers() {
+        mydb = new DBHelper(getActivity());
+
+        mPatternNum = v.findViewById(R.id.text_patternNumber);
+        mBrand = v.findViewById(R.id.spinner_brand);
+        mDescription = v.findViewById(R.id.text_description);
+        mSizeRange = v.findViewById(R.id.text_size);
+        mCategory = v.findViewById(R.id.spinner_category);
+        mBackImage = v.findViewById(R.id.imgView_backImg);
+        mCoverImage = v.findViewById(R.id.imgView_coverImg);
+        mCoverImageButton = v.findViewById(R.id.button_coverImg);
+        mBackImageButton = v.findViewById(R.id.button_backImg);
+        mOCRButton = v.findViewById(R.id.button_ocr);
+        mSaveButton = v.findViewById(R.id.button_save);
+        mBackButton = v.findViewById(R.id.button_back);
+    }
+
+    private void setDependents(boolean state) {
+        mBrand.setEnabled(state);
+        mDescription.setEnabled(state);
+        mSizeRange.setEnabled(state);
+        mCategory.setEnabled(state);
+        mBackImage.setEnabled(state);
+        mCoverImage.setEnabled(state);
+        mCoverImageButton.setEnabled(state);
+        mBackImageButton.setEnabled(state);
+        mOCRButton.setEnabled(state);
+        mSaveButton.setEnabled(state);
+    }
+
+    private void setListeners(){
+        mPatternNum.addTextChangedListener(patternNumWatcher);
+        mCoverImageButton.setOnClickListener(coverImageCapture);
+        mBackImageButton.setOnClickListener(backImageCapture);
+        mCoverImage.setOnClickListener(coverImageEdit);
+        mOCRButton.setOnClickListener(ocrAction);
+        mSaveButton.setOnClickListener(clickSave);
+        mBackButton.setOnClickListener(clickBack);
+    }
+
+    private void loadData() {
+        List<String> brands = mydb.getAllBrands();
+        List<String> categories = mydb.getAllCategories();
+
+        ArrayAdapter<String> brandAdapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.simple_spinner_dropdown_item, brands);
+        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.simple_spinner_dropdown_item, categories);
+
+        brandAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        mBrand.setAdapter(brandAdapter);
+        mCategory.setAdapter(categoryAdapter);
+    }
+
+    private final TextWatcher patternNumWatcher = new TextWatcher() {
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            if(!mPatternNum.getText().toString().equals("")){
+                setDependents(TRUE);
+            }else{
+                setDependents(FALSE);
+            }
+        }
+
+        public void afterTextChanged(Editable s) {
+
+        }
+    };
+
+    private View.OnClickListener coverImageCapture = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            try {
+                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                Log.d(TAG, "about to start camera activity where in the file will saved locally");
+                Log.d(TAG, "camera intent has " + cameraIntent.toString());
+                if (cameraIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    File photoFile = null;
+                    try {
+                        photoFile = createImageFile("cover");
+                    } catch (IOException ex) {
+                        Log.d(TAG, "oh no, file for photo could not be made: " + ex);
+                    }
+
+                    if (photoFile != null) {
+                        Uri photoURI = FileProvider.getUriForFile(v.getContext(), "kama.patterndb.provider", photoFile); //TODO note trying different way to get URI
+                        Log.d(TAG, "photoURI is " + photoURI.toString());
+                        mCoverImageUri = Uri.parse(mCoverImageFileName);
+                        Log.d(TAG, "mCoverImageURI is " + mCoverImageUri.toString());
+                        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                        Log.d(TAG, "camera intent now has " + cameraIntent.toString());
+                        startActivityForResult(cameraIntent, CAMERA_REQUEST_FRONT);
+                    }
+
+                }
+            }catch (Exception e) {
+                Log.d(TAG, "tried to start intent and there was an exception somewhere in there that says: "+e);
+                Toast.makeText(v.getContext().getApplicationContext(), "Exception: "+ e, Toast.LENGTH_LONG).show();
+            }
+
+        }
+    };
+
+    private View.OnClickListener backImageCapture = new View.OnClickListener() { //TODO compare cover and back onClickListeners, can they be combined?
+        @Override
+        public void onClick(View v) {
+            try {
+                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                Log.d(TAG, "about to start camera activity where in the file will saved locally");
+                Log.d(TAG, "camera intent has " + cameraIntent.toString());
+                if (cameraIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    File photoFile = null;
+                    try {
+                        photoFile = createImageFile("back");
+                    } catch (IOException ex) {
+                        Log.d(TAG, "oh no, file for photo could not be made: " + ex);
+                    }
+
+                    if (photoFile != null) {
+                        Uri photoURI = FileProvider.getUriForFile(v.getContext(), "kama.patterndb.provider", photoFile);
+                        mBackImageUri = photoURI;
+                        Log.d(TAG, "photoURI is " + photoURI.toString());
+                        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                        Log.d(TAG, "camera intent now has " + cameraIntent.toString());
+                        startActivityForResult(cameraIntent, CAMERA_REQUEST_BACK);
+                    }
+
+                }
+            }catch (Exception e) {
+                Log.d(TAG, "tried to start intent and there was an exception somewhere in there that says: "+e);
+                Toast.makeText(v.getContext().getApplicationContext(), "Exception: "+ e, Toast.LENGTH_LONG).show();
+            }
+        }
+    };
+
+    private View.OnClickListener coverImageEdit = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            //FIXME I think this needs to be an intent in order for the uri permissions to change things to transfer but looks problematic
+            /*Intent cropIntent = new Intent();
+            cropIntent.putExtra(MediaStore.EXTRA_OUTPUT, mCoverImageUri);
+            startActivityForResult(cropIntent, CROP_REQUEST_COVER);
+*/
+            /*
+            EditImageFragment editImage = EditImageFragment.newInstance(FileProvider.getUriForFile(v.getContext(), "kama.patterndb.provider", new File(mCoverImageFileName)));
+
+            FragmentTransaction ft =  getFragmentManager().beginTransaction();
+            ft.replace(R.id.fragment_container, editImage);
+            ft.addToBackStack(null);
+            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            ft.commit();
+            */
+
+            Toast.makeText(v.getContext(), "Eventually this will let you edit the image and that edit will be saved", Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    private View.OnClickListener ocrAction = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if(mBackImage != null){
+                Log.d(TAG, "clicked the OCR button");
+                Toast.makeText(v.getContext(), "I will send you off to select part of an image to scan for text", Toast.LENGTH_SHORT).show();
+                //TODO OCR STUFF
+                //do some ocr'ing
+                //select part of back image to ocr scan
+                //convert image to text and save in description edittext
+            }
+        }
+    };
+
+    private View.OnClickListener clickSave = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            String patternNum = mPatternNum.getText().toString();
+            int brandID;
+            String size;
+            int[] category;
+            String description;
+            String cover = "location of cover image";
+            String back = "location of back image";
+
+            //there are some/most elements that need to be complete before the pattern can be saved.
+            if(patternNum.equals("")){
+                Toast.makeText(v.getContext(),"Please enter a pattern number", Toast.LENGTH_SHORT).show();
+            }else{
+                //String num, int brand, String sizeRange, int[] category, String description, String coverImg, String backImg
+                category = new int[] {1,2}; //TODO get list of category ids
+                //TODO get and set the various variables to pass to the pattern
+                Pattern pattern = new Pattern(patternNum, 1, "Size", category, "description", "directory for cover image", "directory for back image");
+                Long id = mydb.insertPattern(pattern);
+                Toast.makeText(v.getContext(), "pattern "+id+" saved", Toast.LENGTH_SHORT).show();
+                //TODO clear or refresh the add screen to empty fields
+            }
+        }
+    };
+
+    private View.OnClickListener clickBack = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            getFragmentManager().popBackStack();
+        }
+    };
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         Log.d(TAG, "got activity result for camera");
@@ -309,6 +366,8 @@ public class AddFragment extends Fragment {
                 mCoverImage.setImageBitmap(imageBitmap);
                 
                 Log.d(TAG, "uri is "+ mCoverImageUri.toString());
+            }else if (requestCode == CROP_REQUEST_COVER){
+                Log.d(TAG, "the crop happened i guess");
             }
         }
     }
@@ -318,9 +377,10 @@ public class AddFragment extends Fragment {
         Log.d(TAG, "filename is "+ imageFileName);
         File storageDir = v.getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         Log.d(TAG, "storageDir is "+ storageDir);
-        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
+        File image = new File(storageDir, imageFileName + ".jpg");
 
-        Log.d("mApp", "file just created is "+ image.toString());
+        Log.d(TAG, "file just created is "+ image.toString());
+        Log.d(TAG, "and it exists? " + image.exists());
 
         if(side.equals("cover")){
             mCoverImageFileName = image.getAbsolutePath();
@@ -329,14 +389,6 @@ public class AddFragment extends Fragment {
         }
 
         return image;
-    }
-
-    private void editImage(String side){
-        //get appropriate side open in editor
-        CropImageView cropImageView;
-        //TODO need to think about layout/structure
-        //cropImageView.setImageUriAsync(mCoverImageUri)
-        //overwrite it
     }
 
     private void resizeCoverImage() {

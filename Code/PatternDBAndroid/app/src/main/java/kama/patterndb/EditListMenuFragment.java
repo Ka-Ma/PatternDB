@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
-public class EditListFragment extends Fragment {
+public class EditListMenuFragment extends Fragment {
     //members
     Button mBrandButton;
     Button mCategoryButton;
@@ -17,8 +17,8 @@ public class EditListFragment extends Fragment {
 
     DBHelper mydb;
 
-    public static EditListFragment newInstance(){
-        EditListFragment f = new EditListFragment();
+    public static EditListMenuFragment newInstance(){
+        EditListMenuFragment f = new EditListMenuFragment();
 
         //any args in Bundle
         //Bundle args = new Bundle();
@@ -32,7 +32,7 @@ public class EditListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View v = inflater.inflate(R.layout.edit_lists, null);
+        View v = inflater.inflate(R.layout.edit_lists_menu, null);
 
         return v;
     }

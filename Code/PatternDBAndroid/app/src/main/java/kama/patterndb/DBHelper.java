@@ -2,9 +2,13 @@ package kama.patterndb;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Kat on 2/08/2018.
@@ -148,15 +152,80 @@ public class DBHelper extends SQLiteOpenHelper {
     //get patterns from keywords
     //get patterns from search criteria
     //get list of all patterns
+
     //new brand
+    public void insertBrand(String brand){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        //prepare row to insert
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(BRAND_COLUMN_BRAND, brand);
+
+        //insert row
+        db.insert(BRAND_TABLE_NAME, null, contentValues);
+    }
+
     //update brand
     //delete brand
     //get brand by id
+
     //get list of brands
+    public List<String> getAllBrands(){
+        List<String> brands = new ArrayList<String>();
+
+        String selectQuery = "SELECT * FROM " + BRAND_TABLE_NAME;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if(cursor.moveToFirst()){
+            do{
+                brands.add(cursor.getString(1));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return brands;
+    }
+
     //new category
+    public void insertCategory(String brand){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        //prepare row to insert
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(CATEGORY_COLUMN_CATEGORY, brand);
+
+        //insert row
+        db.insert(CATEGORY_TABLE_NAME, null, contentValues);
+    }
+
     //update category
     //delete category
     //get category by id
-    //get list of categories
 
+    //get list of categories
+    public List<String> getAllCategories(){
+        List<String> categories = new ArrayList<String>();
+
+        String selectQuery = "SELECT * FROM " + CATEGORY_TABLE_NAME;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if(cursor.moveToFirst()){
+            do{
+                categories.add(cursor.getString(1));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return categories;
+    }
 }

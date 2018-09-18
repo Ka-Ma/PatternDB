@@ -75,7 +75,7 @@ public class MenuFragment extends Fragment {
         mEditListsButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                EditListFragment editList = EditListFragment.newInstance();
+                EditListMenuFragment editList = EditListMenuFragment.newInstance();
 
                 FragmentTransaction ft =  getFragmentManager().beginTransaction();
                 ft.replace(R.id.fragment_container, editList);
