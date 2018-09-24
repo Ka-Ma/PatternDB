@@ -15,6 +15,8 @@ public class EditListMenuFragment extends Fragment {
     Button mCategoryButton;
     Button mBackButton;
 
+    BrandListFragment brandListFragment;
+
     DBHelper mydb;
 
     public static EditListMenuFragment newInstance(){
@@ -32,7 +34,7 @@ public class EditListMenuFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View v = inflater.inflate(R.layout.edit_lists_menu, null);
+        View v = inflater.inflate(R.layout.edit_lists_menu, container, false);
 
         return v;
     }
@@ -49,7 +51,10 @@ public class EditListMenuFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 //TODO open brand list fragment with option to add/edit/delete
-                Toast.makeText(v.getContext(), "I will list brands", Toast.LENGTH_SHORT).show();
+                brandListFragment = BrandListFragment.newInstance();
+                android.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+                ft.replace(R.id.fragment_container, brandListFragment);
+                ft.commit();
             }
         });
 

@@ -61,7 +61,7 @@ public class MainActivity extends Activity {
 
             menuFragment = menuFragment.newInstance();
             android.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ft.add(R.id.fragment_container, menuFragment);
+            ft.replace(R.id.fragment_container, menuFragment);
             ft.commit();
         }else{
             Log.d("myApp", "savedInstanceState not null");
