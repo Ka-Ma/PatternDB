@@ -192,13 +192,13 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //new category
-    public void insertCategory(String brand){
+    public void insertCategory(String category){
         SQLiteDatabase db = this.getWritableDatabase();
 
         //prepare row to insert
         ContentValues contentValues = new ContentValues();
 
-        contentValues.put(CATEGORY_COLUMN_CATEGORY, brand);
+        contentValues.put(CATEGORY_COLUMN_CATEGORY, category);
 
         //insert row
         db.insert(CATEGORY_TABLE_NAME, null, contentValues);
