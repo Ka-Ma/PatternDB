@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 
@@ -22,6 +23,16 @@ public class DatabaseUnitTest {
     private DBHelper mydb;
 
     Context context;
+
+    String brand1 = "test1Brand";
+    String brand2 = "test2Brand";
+    String brand3 = "test3Brand";
+    String brand4 = "test4Brand";
+    String cat1 = "test1Category";
+    String cat2 = "test2Category";
+    String cat3 = "test3Category";
+    String cat4 = "test4Category";
+
 
     @Before
     public void initDB(){
@@ -32,6 +43,19 @@ public class DatabaseUnitTest {
 
         //now bind database
         mydb = new DBHelper(context);
+
+        //insert some starting data
+        mydb.insertBrand(brand1);
+        mydb.insertBrand(brand2);
+        mydb.insertBrand(brand3);
+        mydb.insertBrand(brand4);
+        mydb.insertCategory(cat1);
+        mydb.insertCategory(cat2);
+        mydb.insertCategory(cat3);
+        mydb.insertCategory(cat4);
+        int[] category = {1};
+        Pattern pattern = new Pattern("testPattern", 1, "Size", category, "description", "directory for cover image", "directory for back image");
+        mydb.insertPattern(pattern);
     }
 
     @After
@@ -41,36 +65,48 @@ public class DatabaseUnitTest {
 
     @Test
     public void addBrand(){
+        int count = mydb.numBrands() + 1;
         String bra = "testBrand";
         mydb.insertBrand(bra);
         List<String> results = mydb.getAllBrands();
-        assertEquals(1, results.size());
+        assertEquals(count, results.size());
         assertEquals(bra, results.get(results.size()-1));
     }
 
+    @Test
     public void getAllBrands(){
-        mydb.insertBrand("test2Brand");
-        mydb.insertBrand("test3Brand");
-        mydb.insertBrand("test4Brand");
         List<String> results = mydb.getAllBrands();
 
         List<String> expected = new ArrayList<String>();
-        expected.add("testBrand");
-        expected.add("test2Brand");
-        expected.add("test3Brand");
-        expected.add("test4Brand");
+        expected.add(brand1);
+        expected.add(brand2);
+        expected.add(brand3);
+        expected.add(brand4);
 
         assertEquals(expected, results);
     }
 
     @Test
     public void updateBrand(){
+        mydb.insertBrand("testTOCHANGEBrand");
+        long id = mydb.findBrand("testTOCHANGEBrand");
+        int result = mydb.updateBrand(id, "testCHANGEDBrand");
 
+        assertEquals(1, result);
     }
 
     @Test
     public void deleteBrand(){
+        long id = mydb.findBrand(brand1);
+        mydb.deleteBrand(id);
+        List<String> results = mydb.getAllBrands();
 
+        List<String> expected = new ArrayList<String>();
+        expected.add(brand2);
+        expected.add(brand3);
+        expected.add(brand4);
+
+        assertEquals(expected, results);
     }
 
     @Test
@@ -78,22 +114,78 @@ public class DatabaseUnitTest {
         String cat = "testCategory";
         mydb.insertCategory(cat);
         List<String> results = mydb.getAllCategories();
-        assertEquals(1, results.size());
+        assertEquals(5, results.size());
         assertEquals(cat, results.get(results.size()-1));
+    }
+
+    @Test
+    public void getAllCategories(){
+        List<String> results = mydb.getAllCategories();
+
+        List<String> expected = new ArrayList<String>();
+        expected.add(cat1);
+        expected.add(cat2);
+        expected.add(cat3);
+        expected.add(cat4);
+
+        assertEquals(expected, results);
+    }
+
+    @Test
+    public void updateCategory(){
+        String expected = cat1 + "updated";
+        long id = mydb.findCategory(cat1);
+        mydb.updateCategory(id, expected);
+        String results = mydb.findCategory(id);
+
+        assertEquals(expected, results);
+    }
+
+    @Test
+    public void deleteCategory(){
+        long id = mydb.findCategory("test1Category");
+        mydb.deleteCategory(id);
+        List<String> results = mydb.getAllCategories();
+
+        List<String> expected = new ArrayList<String>();
+        expected.add(cat2);
+        expected.add(cat3);
+        expected.add(cat4);
+
+        assertEquals(expected, results);
     }
 
     @Test
     public void addEntry() throws Exception {
         int[] category = {1};
-        Pattern pattern = new Pattern("testPattern", 1, "Size", category, "description", "directory for cover image", "directory for back image");
+        Pattern pattern = new Pattern("testPattern2", 1, "Size", category, "description", "directory for cover image", "directory for back image");
 
         long pattNum = mydb.insertPattern(pattern);
-        assertEquals(1, pattNum);
+        assertEquals(2, pattNum);
     }
 
     @Test
-    public void testingTheTest() {
-        //nothing
+    public void updateEntry() {
+        //find a pattern
+        //set new pattern dets
+        //send it to the db
+    }
+
+    @Test
+    public void deleteEntry(){
+        //find a pattern
+        //delete a pattern
+    }
+
+    @Test
+    public void getAllEntries(){
+        //get list of all patterns
+        mydb.getAllPatterns();
+    }
+
+    @Test
+    public void searchEntries(){
+        //
     }
 
 

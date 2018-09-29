@@ -14,7 +14,13 @@ public class Pattern {
     private String mBackImageLocn;
 
     Pattern(){
-
+        mNum = null;
+        mBrand = -1;
+        mSizeRange = null;
+        mCategory = null;
+        mDescription = null;
+        mCoverImageLocn = null;
+        mBackImageLocn = null;
     }
 
     Pattern(String num, int brand, String sizeRange, int[] category, String description, String coverImg, String backImg){
@@ -55,6 +61,32 @@ public class Pattern {
         return mBackImageLocn;
     }
 
+    public void setNum(String num){
+        mNum = num;
+    }
 
+    public void setBrand(int brand){
+        mBrand = brand;
+    }
+
+    public void setSizeRange(String range){
+        mSizeRange = range;
+    }
+
+    public void setCategory(int[] category){
+        mCategory = category;
+    }
+
+    public void setDescription(String description){
+        mDescription = description;
+    }
+
+    public void setCoverImageLocn(String locn){
+        mCoverImageLocn = locn;
+    }
+
+    public void setBackImageLocn(String locn){
+        mBackImageLocn = locn;
+    }
 
 }
