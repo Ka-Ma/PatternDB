@@ -5,6 +5,7 @@ package kama.patterndb;
  */
 
 public class Pattern {
+    private long mUID;
     private String mNum;
     private int mBrand;
     private String mSizeRange;
@@ -14,6 +15,7 @@ public class Pattern {
     private String mBackImageLocn;
 
     Pattern(){
+        mUID = -1;
         mNum = null;
         mBrand = -1;
         mSizeRange = null;
@@ -32,6 +34,8 @@ public class Pattern {
         mCoverImageLocn = coverImg;
         mBackImageLocn = backImg;
     }
+
+    public long getUID() { return mUID;}
 
     public String getNum(){
         return mNum;
@@ -59,6 +63,10 @@ public class Pattern {
 
     public String getBackImageLocn(){
         return mBackImageLocn;
+    }
+
+    public void setUID(long uid){
+        mUID = uid;
     }
 
     public void setNum(String num){

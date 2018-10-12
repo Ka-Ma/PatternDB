@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -148,10 +149,265 @@ public class DBHelper extends SQLiteOpenHelper {
     //TODO all the queries below
     //update pattern
     //delete pattern
+
     //get pattern by id
+    public Pattern getPatternById(Long id){
+        Pattern p = new Pattern();
+
+        String selectQuery = "SELECT * FROM " + PATTERN_TABLE_NAME + " WHERE " + PATTERN_COLUMN_PATTERNID + " = ? ";
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, new String[] { Long.toString(id)});
+
+        String subQuery = "SELECT * FROM " + PATTERNCATEGORY_TABLE_NAME + " WHERE " + PATTERNCATEGORY_COLUMN_PATTERNID + " = ? ";
+
+        if(cursor.moveToFirst()){
+            p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
+            p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
+            p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
+            //sub query for associative table
+            Cursor subCursor = db.rawQuery(subQuery, new String[] {Long.toString(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
+            List<Integer> categories = new ArrayList<>();
+            if(subCursor.moveToFirst()){
+                do{
+                    categories.add(subCursor.getInt(subCursor.getColumnIndex(PATTERNCATEGORY_COLUMN_CATEGORYID)));
+                } while (subCursor.moveToNext());
+                subCursor.close();
+            }
+            p.setCategory(convert(categories));
+            p.setDescription(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_DESCRIPTION)));// String description,
+            p.setCoverImageLocn(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_COVERIMAGE)));// String coverImg,
+            p.setBackImageLocn(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_BACKIMAGE)));// String backImg
+        }
+
+        cursor.close();
+        db.close();
+
+        return p;
+    }
+
     //get pattern/s by pattern number
-    //get patterns from keywords
-    //get patterns from search criteria
+    public List<Pattern> getPatternByPatternNum(String num){
+        List<Pattern> patterns = new ArrayList<>();
+
+        String selectQuery = "SELECT * FROM " + PATTERN_TABLE_NAME + " WHERE " + PATTERN_COLUMN_PATTERNNUM + " = ? ";
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, new String[] {num});
+
+        String subQuery = "SELECT * FROM " + PATTERNCATEGORY_TABLE_NAME + " WHERE " + PATTERNCATEGORY_COLUMN_PATTERNID + " = ? ";
+
+        if(cursor.moveToFirst()){
+            do{
+                Pattern p = new Pattern();
+
+                p.setUID(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
+                p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
+                p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
+                p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
+                //sub query for associative table
+                Cursor subCursor = db.rawQuery(subQuery, new String[] {Long.toString(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
+                List<Integer> categories = new ArrayList<>();
+                if(subCursor.moveToFirst()){
+                    do{
+                        categories.add(subCursor.getInt(subCursor.getColumnIndex(PATTERNCATEGORY_COLUMN_CATEGORYID)));
+                    } while (subCursor.moveToNext());
+                    subCursor.close();
+                }
+                p.setCategory(convert(categories));
+                p.setDescription(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_DESCRIPTION)));// String description,
+                p.setCoverImageLocn(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_COVERIMAGE)));// String coverImg,
+                p.setBackImageLocn(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_BACKIMAGE)));// String backImg
+
+                patterns.add(p);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return patterns;
+    }
+
+    //get patterns from keywords in description
+    public List<Pattern> getPatternByDescription(String desc){
+        List<Pattern> patterns = new ArrayList<>();
+
+        String selectQuery = "SELECT * FROM " + PATTERN_TABLE_NAME + " WHERE " + PATTERN_COLUMN_DESCRIPTION + " LIKE '%"+desc+"%'";
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null );//new String[] {desc});
+
+        String subQuery = "SELECT * FROM " + PATTERNCATEGORY_TABLE_NAME + " WHERE " + PATTERNCATEGORY_COLUMN_PATTERNID + " = ? ";
+
+        if(cursor.moveToFirst()){
+            do{
+                Pattern p = new Pattern();
+
+                p.setUID(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
+                p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
+                p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
+                p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
+                //sub query for associative table
+                Cursor subCursor = db.rawQuery(subQuery, new String[] {Long.toString(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
+                List<Integer> categories = new ArrayList<>();
+                if(subCursor.moveToFirst()){
+                    do{
+                        categories.add(subCursor.getInt(subCursor.getColumnIndex(PATTERNCATEGORY_COLUMN_CATEGORYID)));
+                    } while (subCursor.moveToNext());
+                    subCursor.close();
+                }
+                p.setCategory(convert(categories));
+                p.setDescription(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_DESCRIPTION)));// String description,
+                p.setCoverImageLocn(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_COVERIMAGE)));// String coverImg,
+                p.setBackImageLocn(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_BACKIMAGE)));// String backImg
+
+                patterns.add(p);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return patterns;
+    }
+
+    //get patterns by brand
+    public List<Pattern> getPatternByBrand(long brand){
+        List<Pattern> patterns = new ArrayList<>();
+
+        String selectQuery = "SELECT * FROM " + PATTERN_TABLE_NAME + " WHERE " + PATTERN_COLUMN_BRANDID + " = " + brand;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        String subQuery = "SELECT * FROM " + PATTERNCATEGORY_TABLE_NAME + " WHERE " + PATTERNCATEGORY_COLUMN_PATTERNID + " = ? ";
+
+        if(cursor.moveToFirst()){
+            do{
+                Pattern p = new Pattern();
+
+                p.setUID(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
+                p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
+                p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
+                p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
+                //sub query for associative table
+                Cursor subCursor = db.rawQuery(subQuery, new String[] {Long.toString(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
+                List<Integer> categories = new ArrayList<>();
+                if(subCursor.moveToFirst()){
+                    do{
+                        categories.add(subCursor.getInt(subCursor.getColumnIndex(PATTERNCATEGORY_COLUMN_CATEGORYID)));
+                    } while (subCursor.moveToNext());
+                    subCursor.close();
+                }
+                p.setCategory(convert(categories));
+                p.setDescription(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_DESCRIPTION)));// String description,
+                p.setCoverImageLocn(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_COVERIMAGE)));// String coverImg,
+                p.setBackImageLocn(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_BACKIMAGE)));// String backImg
+
+                patterns.add(p);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return patterns;
+    }
+
+    //get list of patterns by category
+    public List<Pattern> getPatternByCategory(long category){
+        List<Pattern> patterns = new ArrayList<>();
+
+        String selectQuery = "SELECT * FROM " + PATTERN_TABLE_NAME +
+                " LEFT JOIN " + PATTERNCATEGORY_TABLE_NAME +
+                " ON " + PATTERN_TABLE_NAME + "." + PATTERN_COLUMN_PATTERNID + " = " +PATTERNCATEGORY_TABLE_NAME + "." + PATTERNCATEGORY_COLUMN_PATTERNID +
+                " WHERE " + PATTERNCATEGORY_TABLE_NAME+"."+PATTERNCATEGORY_COLUMN_CATEGORYID + " = " + category;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        String subQuery = "SELECT * FROM " + PATTERNCATEGORY_TABLE_NAME + " WHERE " + PATTERNCATEGORY_COLUMN_PATTERNID + " = ? ";
+
+        if(cursor.moveToFirst()){
+            do{
+                Pattern p = new Pattern();
+
+                p.setUID(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
+                p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
+                p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
+                p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
+                //sub query for associative table
+                Cursor subCursor = db.rawQuery(subQuery, new String[] {Long.toString(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
+                List<Integer> categories = new ArrayList<>();
+                if(subCursor.moveToFirst()){
+                    do{
+                        categories.add(subCursor.getInt(subCursor.getColumnIndex(PATTERNCATEGORY_COLUMN_CATEGORYID)));
+                    } while (subCursor.moveToNext());
+                    subCursor.close();
+                }
+                p.setCategory(convert(categories));
+                p.setDescription(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_DESCRIPTION)));// String description,
+                p.setCoverImageLocn(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_COVERIMAGE)));// String coverImg,
+                p.setBackImageLocn(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_BACKIMAGE)));// String backImg
+
+                patterns.add(p);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return patterns;
+    }
+
+    //get list of patterns that have keyword/s in description, selected brand/s or all brands, selected categories or all categories
+    public List<Pattern> getPatternsMatching(String keywords, int[] brands, int[] categories){
+        List<Pattern> patterns = new ArrayList<>();
+
+        //build select Query
+        String selectQuery = "SELECT * FROM " + PATTERN_TABLE_NAME;
+
+        if(categories != null){
+            selectQuery = selectQuery.concat(" LEFT JOIN " + PATTERNCATEGORY_TABLE_NAME +
+                    " ON " + PATTERN_TABLE_NAME + "." + PATTERN_COLUMN_PATTERNID + " = " +PATTERNCATEGORY_TABLE_NAME + "." + PATTERNCATEGORY_COLUMN_PATTERNID);
+        }
+
+        if(keywords != null || brands != null || categories != null){
+            //TODO figure out how to take this out if keywords is not null but is empty because if you test isEmpty on a null it bombs
+            selectQuery = selectQuery.concat(" WHERE ");
+        }
+
+        if(brands != null){
+            // if brands is null search all else where brand = [0] or [1] etc
+            selectQuery = selectQuery.concat(PATTERN_COLUMN_BRANDID + " = ? AND ");
+        }
+
+        if(categories != null) {
+            // if categories is null search all else where categories = [0] or [1] etc
+            selectQuery = selectQuery.concat(PATTERNCATEGORY_COLUMN_CATEGORYID + " = ? AND ");
+        }
+
+        // if keywords is more than one word (separated by spaces) split it up for an AND search that is not necessarily in that order
+        if(keywords != null) {
+            if(!keywords.isEmpty()){String[] words = keywords.split(" ");
+
+                selectQuery = selectQuery.concat(PATTERN_COLUMN_DESCRIPTION);
+
+                for (String key : words) {
+                    selectQuery = selectQuery.concat(" LIKE '%" + key + "%' OR");
+                }
+
+                selectQuery = selectQuery.substring(0, selectQuery.lastIndexOf("OR"));
+            }
+        }
+
+        Log.d("myApp", "getPatternsMatching select query is: " + selectQuery);
+
+        //TODO finish this
+
+        return patterns;
+    }
 
     //get list of all patterns
     public List<Pattern> getAllPatterns(){
@@ -168,6 +424,7 @@ public class DBHelper extends SQLiteOpenHelper {
             do{
                 Pattern p = new Pattern();
 
+                p.setUID(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
                 p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
                 p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
                 p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
@@ -241,8 +498,8 @@ public class DBHelper extends SQLiteOpenHelper {
         return (int) DatabaseUtils.queryNumEntries(db, BRAND_TABLE_NAME);
     }
 
-    //get brand by name
-    public String findBrand(long id){
+    //get brand by id
+    public String getBrand(long id){
         SQLiteDatabase db = this.getReadableDatabase();
 
         String selectQuery = "SELECT * FROM " + BRAND_TABLE_NAME + " WHERE " + BRAND_COLUMN_BRANDID + "=" + id;
@@ -251,17 +508,18 @@ public class DBHelper extends SQLiteOpenHelper {
 
         cursor.moveToFirst();
 
-        return cursor.getString(cursor.getColumnIndex(BRAND_COLUMN_BRANDID));
+        return cursor.getString(cursor.getColumnIndex(BRAND_COLUMN_BRAND));
     }
 
-    //get brand by id
-    public long findBrand(String brand){
+    //get brand by name
+    public long getBrand(String brand){
         SQLiteDatabase db = this.getReadableDatabase();
 
         String selectQuery = "SELECT * FROM " + BRAND_TABLE_NAME + " WHERE " + BRAND_COLUMN_BRAND + " = ? ";
 
         Cursor cursor = db.rawQuery(selectQuery, new String[] {brand});
 
+        Log.d("myApp", "looking for "+brand+", cursor has found " + cursor.getCount());
         cursor.moveToFirst();
 
         return cursor.getLong(cursor.getColumnIndex(BRAND_COLUMN_BRANDID));
@@ -325,7 +583,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //get category by name
-    public long findCategory(String category){
+    public long getCategory(String category){
         long id;
 
         String selectQuery = "SELECT * FROM " + CATEGORY_TABLE_NAME + " WHERE " + CATEGORY_COLUMN_CATEGORY + " = ?";
@@ -336,8 +594,11 @@ public class DBHelper extends SQLiteOpenHelper {
 
         cursor.moveToFirst();
 
-        id = cursor.getLong(cursor.getColumnIndex(CATEGORY_COLUMN_CATEGORYID));
-
+        if(cursor.getCount() == 0){
+            id = -1;
+        }else {
+            id = cursor.getLong(cursor.getColumnIndex(CATEGORY_COLUMN_CATEGORYID));
+        }
         cursor.close();
         db.close();
 
@@ -345,7 +606,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //get category by id
-    public String findCategory(long id){
+    public String getCategory(long id){
         String result;
 
         String selectQuery = "SELECT * FROM " + CATEGORY_TABLE_NAME + " WHERE " + CATEGORY_COLUMN_CATEGORYID + " = " + id;
