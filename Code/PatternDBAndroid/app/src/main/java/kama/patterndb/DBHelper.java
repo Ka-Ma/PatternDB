@@ -374,28 +374,51 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         if(keywords != null || brands != null || categories != null){
-            //TODO figure out how to take this out if keywords is not null but is empty because if you test isEmpty on a null it bombs
             selectQuery = selectQuery.concat(" WHERE ");
         }
 
+        if(keywords != null && brands == null && categories == null){
+            if(keywords.isEmpty()){
+                selectQuery = selectQuery.substring(0, selectQuery.length()-7);
+            }
+        }
+
         if(brands != null){
-            // if brands is null search all else where brand = [0] or [1] etc
-            selectQuery = selectQuery.concat(PATTERN_COLUMN_BRANDID + " = ? AND ");
+            // if brands is more than one need to build " 1 OR 2 OR 3 AND "
+            selectQuery = selectQuery.concat(PATTERN_COLUMN_BRANDID + " = " + brands[0]);
+            if(brands.length > 1){
+                for(int i = 1; i < brands.length; i++){
+                    selectQuery = selectQuery.concat(" OR " + PATTERN_COLUMN_BRANDID +" = " + brands[i]);
+                }
+            }
+        }
+
+        //need to put an "AND" in if there is brands prior
+        if(brands != null){
+            selectQuery = selectQuery.concat(" AND ");
         }
 
         if(categories != null) {
-            // if categories is null search all else where categories = [0] or [1] etc
-            selectQuery = selectQuery.concat(PATTERNCATEGORY_COLUMN_CATEGORYID + " = ? AND ");
+            // if categories is more than one need to build " 1 OR 2 OR 3 AND "
+            selectQuery = selectQuery.concat(PATTERNCATEGORY_COLUMN_CATEGORYID + " = " + categories[0]);
+            if(categories.length > 1){
+                for(int i = 1; i < categories.length; i++){
+                    selectQuery = selectQuery.concat(" OR "  + PATTERNCATEGORY_COLUMN_CATEGORYID + " = " + categories[i]);
+                }
+            }
+        }
+
+        //need to put an "AND" in if there are categories or brands prior
+        if(categories != null){
+            selectQuery = selectQuery.concat(" AND ");
         }
 
         // if keywords is more than one word (separated by spaces) split it up for an AND search that is not necessarily in that order
         if(keywords != null) {
             if(!keywords.isEmpty()){String[] words = keywords.split(" ");
 
-                selectQuery = selectQuery.concat(PATTERN_COLUMN_DESCRIPTION);
-
                 for (String key : words) {
-                    selectQuery = selectQuery.concat(" LIKE '%" + key + "%' OR");
+                    selectQuery = selectQuery.concat(PATTERN_COLUMN_DESCRIPTION + " LIKE '%" + key + "%' OR ");
                 }
 
                 selectQuery = selectQuery.substring(0, selectQuery.lastIndexOf("OR"));
@@ -404,7 +427,41 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Log.d("myApp", "getPatternsMatching select query is: " + selectQuery);
 
-        //TODO finish this
+        //run the query
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor  = db.rawQuery(selectQuery, null);
+
+        String subQuery = "SELECT * FROM " + PATTERNCATEGORY_TABLE_NAME + " WHERE " + PATTERNCATEGORY_COLUMN_PATTERNID + " = ? ";
+
+        if(cursor.moveToFirst()){
+            do{
+                Pattern p = new Pattern();
+
+                p.setUID(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
+                p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
+                p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
+                p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
+                //sub query for associative table
+                Cursor subCursor = db.rawQuery(subQuery, new String[] {Long.toString(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
+                List<Integer> tempCategories = new ArrayList<>();
+                if(subCursor.moveToFirst()){
+                    do{
+                        tempCategories.add(subCursor.getInt(subCursor.getColumnIndex(PATTERNCATEGORY_COLUMN_CATEGORYID)));
+                    } while (subCursor.moveToNext());
+                    subCursor.close();
+                }
+                p.setCategory(convert(tempCategories));
+                p.setDescription(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_DESCRIPTION)));// String description,
+                p.setCoverImageLocn(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_COVERIMAGE)));// String coverImg,
+                p.setBackImageLocn(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_BACKIMAGE)));// String backImg
+
+                patterns.add(p);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
 
         return patterns;
     }

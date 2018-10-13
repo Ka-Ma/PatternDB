@@ -344,13 +344,28 @@ public class DatabaseUnitTest {
         //confirm db has been populated, if not do so
 
         // given a category or categories search all those for keywords in description
+        Log.d("myApp", "in test, all null");
         mydb.getPatternsMatching(null, null, null);
+
+        Log.d("myApp", "in test, keywords not null but nothing, others null");
         mydb.getPatternsMatching("", null, null);
+
+        Log.d("myApp", "in test, is a keyword, others null");
         mydb.getPatternsMatching("find", null, null);
+
+        Log.d("myApp", "in test, multiple keywords, others null");
         mydb.getPatternsMatching("find these words", null, null);
+
+        Log.d("myApp", "in test, none null");
         mydb.getPatternsMatching("find these words", new int[] {1,2}, new int[] {3,4});
+
+        Log.d("myApp", "in test, brands null");
         mydb.getPatternsMatching("find these words", null, new int[] {3,4});
+
+        Log.d("myApp", "in test, categories null");
         mydb.getPatternsMatching("find these words", new int[] {1,2}, null);
+
+        //TODO confirm the patterns coming back are correct.
 
     }
 
