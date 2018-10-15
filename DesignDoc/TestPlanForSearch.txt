@@ -1,0 +1,74 @@
+//adding brands
+String brand1 = "test1Brand"; //1
+String brand2 = "test2Brand"; //2
+String brand3 = "test3Brand"; //3
+String brand4 = "test4Brand"; //4
+mydb.insertBrand("McCall's"); //5
+mydb.insertBrand("Burda");    //6
+
+//adding categories
+String cat1 = "test1Category";          //1
+String cat2 = "test2Category";          //2  
+String cat3 = "test3Category";          //3
+String cat4 = "test4Category";          //4
+mydb.insertCategory("Business/Casual"); //5
+mydb.insertCategory("Leisure");         //6
+mydb.insertCategory("Formal");          //7
+mydb.insertCategory("Kids");            //8
+mydb.insertCategory("Casual");          //9
+
+//patterns	
+Pattern(String num, int brand, String sizeRange, int[] category, String description, String coverImg, String backImg)
+1 Pattern("testPattern", 1, "Size", new int[] {1}, 
+					"description", "directory for cover image", "directory for back image");
+2 Pattern("7391", (int) mydb.getBrand("McCall's"), "10-12-14-16", new int[] {(int) mydb.getCategory("Business/Casual")}, 
+					"Misses' Unlined Jacket, Vest and Skirt: Unlined jacket and front buttoned vest have princess seaming; pull-on skirt with back slit has side seam pockets and fold-back waist casing with two rows of elastic extending to front pleats", "here", "there"));
+3 Pattern("7711", (int) mydb.getBrand("McCall's"), "14, 16, 18", new int[] {(int) mydb.getCategory("Leisure")}, 
+					"Misses' Lined or Unlined dress or jumper in two lengths: Princess seamed dress or jumper in two lengths with back zipper and optional lining has cut in armholes and optional ribbon trim.", "here", "there"));
+4 Pattern("6855", (int) mydb.getBrand("McCall's"), "16", new int[] {(int) mydb.getCategory("Formal")}, 
+					"Misses' lined bolero and lined dress in two lengths: Cropped bolero has front and back princess seams, kimono sleeves with under sleeve inset and shoulder pads; fitted dress has front and back princess darts and back zipper; longer length dress has slit on left side with underlay.", "here", "there"));
+5 Pattern("9206", (int) mydb.getBrand("McCall's"), "4, 5, 6", new int[] {(int) mydb.getCategory("Kids"), (int) mydb.getCategory("Casual")}, 
+					"Children's and boys' shirt , t-shirt, pants or shorts and hat - t-shirts B and C for stretch knits only: Loose fitting pullover shirt and T-shirt with extended shoulders have long or short sleeves; view A and front \"V\" neck with self-fabric neckband; views B and C with round neck have neckband of ribbed knit; pull-on pants with elasticized ankles and shorts have two rows of elastic through fold-back waist casing and side seam pockets; baseball hat also included.", "here", "there"));
+6 Pattern("9206", (int) mydb.getBrand("McCall's"), "2, 3, 4", new int[] {(int) mydb.getCategory("Kids"), (int) mydb.getCategory("Casual")}, 
+					"Children's and boys' shirt , t-shirt, pants or shorts and hat - t-shirts B and C for stretch knits only: Loose fitting pullover shirt and T-shirt with extended shoulders have long or short sleeves; view A and front \"V\" neck with self-fabric neckband; views B and C with round neck have neckband of ribbed knit; pull-on pants with elasticized ankles and shorts have two rows of elastic through fold-back waist casing and side seam pockets; baseball hat also included.", "here", "there"));
+7 Pattern("9711", (int) mydb.getBrand("Burda"), "3m, 6m, 9m, 12m, 18m", new int[] {(int) mydb.getCategory("Kids")}, 
+					"coordinates: loose fitting, ample", "here", "there"));
+
+TEST RULES
+the user selects brand/s
+the user selects category/s
+the user enters keywords to search on
+the user expects that the keywords will be in a pattern of the selected brand in the selected category.
+
+
+TEST PLAN
+test #	keywords brands categories	= actuals			= expected results 
+1-3		null null null 				= null, null, null 	= 7 (NOTE: test keywords for null, "" and " ")
+4		null null 1 opt  			= null, null, Kids 	= 3
+5		null null 2 opt = null, null, (Kids, Casual) = 3 
+6a		null 1 opt null = null, Burda, null = 1
+6b		null 1 opt null = null, McCall's, null = 5
+7a 		null 1 opt 1 opt = null, McCall's, Leisure = 1
+7b 		null 1 opt 1 opt = null, McCall's, Kids = 2 
+8		null 1 opt 2 opt = null, McCall's, (Kids, Leisure) = 3
+9		null 2 opt null = null, (McCall's, Burda), null = 6
+10		null 2 opt 1 opt = null, (McCall's, Burda), Leisure = 1
+11		null 2 opt 2 opt = null, (McCall's, Burda), (Leisure, Formal) = 2
+12		1 opt null null = dress, null, null = 2
+13		1 opt null 1 opt = dress, null, Formal = 1
+14		1 opt null 2 opt = dress, null, (Formal, Leisure) = 2
+15		1 opt 1 opt null = princess, McCall's, null = 3
+16		1 opt 1 opt 1 opt = princess, McCall's, Business/Casual = 1
+17		1 opt 1 opt 2 opt = princess, McCall's, (Business/Casual, Formal) = 2
+18		1 opt 2 opt null = princess, (McCall's, Burda), null = 3
+19		1 opt 2 opt 1 opt = princess, (McCall's, Burda), Business/Casual = 1
+20		1 opt 2 opt 2 opt = princess, (McCall's, Burda), (Business/Casual, Formal) = 2
+21		2 opt null null = (princess, dress), null, null = 3
+22		2 opt null 1 opt = (princess, dress), null, Business/Casual = 1
+23		2 opt null 2 opt = (princess, dress), null, (Business/Casual, Formal) = 2
+24		2 opt 1 opt null = (princess, dress), McCall's, null = 3
+25		2 opt 1 opt 1 opt = (princess, dress), McCall's, Formal = 1
+26		2 opt 1 opt 2 opt = (princess, dress), McCall's, (Leisure, Formal) = 2
+27		2 opt 2 opt null = (princess, dress), (McCall's, Burda), null = 3
+28		2 opt 2 opt 1 opt = (princess, dress), (McCall's, Burda), Leisure = 1
+29		2 opt 2 opt 2 opt = (princess, dress), (McCall's, Burda), (Leisure, Formal) = 2

@@ -9,6 +9,7 @@ import android.util.Log;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import java.io.IOException;
@@ -132,7 +133,17 @@ public class DatabaseUnitTest {
 
     @Test
     public void findCategory(){
-        //find a particular category
+        String expectedStr = cat3;
+
+        String resultStr = mydb.getCategory(3);
+
+        assertEquals(expectedStr, resultStr);
+
+        int expectedInt = 4;
+
+        int resultInt = (int) mydb.getCategory(cat4);
+
+        assertEquals(expectedInt, resultInt);
     }
 
     @Test
@@ -182,6 +193,7 @@ public class DatabaseUnitTest {
     }
 
     @Test
+    @Ignore
     public void updateEntry() {
         //find a pattern
         //set new pattern dets
@@ -191,6 +203,7 @@ public class DatabaseUnitTest {
     }
 
     @Test
+    @Ignore
     public void deleteEntry(){
         //find a pattern
         //delete a pattern
@@ -341,36 +354,33 @@ public class DatabaseUnitTest {
     @Test
     public void searchEntriesByDescriptionAndCategory(){
         //find pattern by description & category
+        List<Pattern> result;
+
         //confirm db has been populated, if not do so
+        if(!checkTestDBExists()){
+            makeTestDb();
+        }
+
+        //create test array to lessen code
+        List<TestData> testData = createTestData();
+        //List<TestData> testData = createTestDataForDebug();
 
         // given a category or categories search all those for keywords in description
-        Log.d("myApp", "in test, all null");
-        mydb.getPatternsMatching(null, null, null);
+        for(TestData t : testData) {
+            Log.d("myApp", t.getMsg());
+            result = mydb.getPatternsMatching(t.getKeyWords(), t.getBrands(), t.getCategories());
 
-        Log.d("myApp", "in test, keywords not null but nothing, others null");
-        mydb.getPatternsMatching("", null, null);
+            Log.d("myApp", "there are " + result.size() + " results");
+            for (Pattern p : result) {
+                printToScreen(p);
+            }
 
-        Log.d("myApp", "in test, is a keyword, others null");
-        mydb.getPatternsMatching("find", null, null);
-
-        Log.d("myApp", "in test, multiple keywords, others null");
-        mydb.getPatternsMatching("find these words", null, null);
-
-        Log.d("myApp", "in test, none null");
-        mydb.getPatternsMatching("find these words", new int[] {1,2}, new int[] {3,4});
-
-        Log.d("myApp", "in test, brands null");
-        mydb.getPatternsMatching("find these words", null, new int[] {3,4});
-
-        Log.d("myApp", "in test, categories null");
-        mydb.getPatternsMatching("find these words", new int[] {1,2}, null);
-
-        //TODO confirm the patterns coming back are correct.
-
+            assertEquals(t.getExpected(), result.size());
+        }
     }
 
 
-
+    //helper methods
     private List<Pattern> makeTestDb(){
         Log.d("myTest", "making test db");
         List<Pattern> result = new ArrayList<Pattern>();
@@ -435,12 +445,87 @@ public class DatabaseUnitTest {
     }
 
     private void printToScreen(Pattern p){
-        Log.d("myTest", "Pattern UID: " + p.getUID());
-        Log.d("myTest", "Pattern Number: " + p.getNum());
-        Log.d("myTest", "Pattern Brand: " + mydb.getBrand(p.getBrand()));
+        String msg = "UID: " + p.getUID() + " Number: " + p.getNum() + " Brand: " + mydb.getBrand(p.getBrand()) + " Categories: ";
         for(int cat : p.getCategory()){
-            Log.d("myTest", "Pattern Categories: " + mydb.getCategory(cat));
+            msg = msg.concat(mydb.getCategory(cat) + ", ");
         }
-
+        msg = msg.concat(" Desc: " + p.getDescription());
+        Log.d("myTest", msg );
     }
+
+    private List<TestData> createTestData(){
+        List<TestData> testData = new ArrayList<>();
+
+        testData.add(new TestData("in test, #1 keywords = null, brands = null, categories = null",null, null, null, 7));
+        testData.add(new TestData("in test, #2 keywords = \"\", brands = null, categories = null","", null, null, 7));
+        testData.add(new TestData("in test, #3 keywords = \" \", brands = null, categories = null"," ", null, null, 7));
+        testData.add(new TestData("in test, #4 keywords = null, brands = null, categories = Kids",null, null, new int[] {(int) mydb.getCategory("Kids")}, 3));
+        testData.add(new TestData("in test, #5 keywords = null, brands = null, categories = Kids, Casual",null, null, new int[] {(int) mydb.getCategory("Kids"), (int) mydb.getCategory("Casual")}, 3));
+        testData.add(new TestData("in test, #6a keywords = null, brands = Burda, categories = null", null, new int[] {(int) mydb.getBrand("Burda")}, null, 1));
+        testData.add(new TestData("in test, #6b keywords = null, brands = McCall's, categories = null", null, new int[] {(int) mydb.getBrand("McCall's")}, null, 5));
+        testData.add(new TestData("in test, #7a keywords = null, brands = McCall's, categories = Leisure", null, new int[] {(int) mydb.getBrand("McCall's")}, new int[] {(int) mydb.getCategory("Leisure")}, 1));
+        testData.add(new TestData("in test, #7b keywords = null, brands = McCall's, categories = Kids", null, new int[] {(int) mydb.getBrand("McCall's")}, new int[] {(int) mydb.getCategory("Kids")}, 2));
+        testData.add(new TestData("in test, #8 keywords = null, brands = McCall's, categories = Kids, Leisure", null, new int[] {(int) mydb.getBrand("McCall's")}, new int[] {(int) mydb.getCategory("Kids"), (int) mydb.getCategory("Leisure")}, 3));
+        testData.add(new TestData("in test, #9 keywords = null, brands = McCall's, Burda, categories = null", null, new int[] {(int) mydb.getBrand("McCall's"), (int) mydb.getBrand("Burda")}, null, 6));
+        testData.add(new TestData("in test, #10 keywords = null, brands = McCall's, Burda, categories = Leisure", null, new int[] {(int) mydb.getBrand("McCall's"), (int) mydb.getBrand("Burda")}, new int[] {(int) mydb.getCategory("Leisure")}, 1));
+        testData.add(new TestData("in test, #11 keywords = null, brands = McCall's, Burda, categories = Leisure, Formal", null, new int[] {(int) mydb.getBrand("McCall's"), (int) mydb.getBrand("Burda")}, new int[] {(int) mydb.getCategory("Leisure"), (int) mydb.getCategory("Formal")}, 2));
+        testData.add(new TestData("in test, #12 keywords = \"dress\", brands = null, categories = null","dress", null, null, 2));
+        testData.add(new TestData("in test, #13 keywords = \"dress\", brands = null, categories = Formal","dress", null, new int[] {(int) mydb.getCategory("Formal")}, 1));
+        testData.add(new TestData("in test, #14 keywords = \"dress\", brands = null, categories = Formal, Leisure","dress", null, new int[] {(int) mydb.getCategory("Formal"), (int) mydb.getCategory("Leisure")}, 2));
+        testData.add(new TestData("in test, #15 keywords = \"princess\", brands = McCall's, categories = null", "princess", new int[] {(int) mydb.getBrand("McCall's")}, null, 3));
+        testData.add(new TestData("in test, #16 keywords = \"princess\", brands = McCall's, categories = Business/Casual", "princess", new int[] {(int) mydb.getBrand("McCall's")}, new int[] {(int) mydb.getCategory("Business/Casual")}, 1));
+        testData.add(new TestData("in test, #17 keywords = \"princess\", brands = McCall's, categories = Business/Casual, Formal", "princess", new int[] {(int) mydb.getBrand("McCall's")}, new int[] {(int) mydb.getCategory("Business/Casual"), (int) mydb.getCategory("Formal")}, 2));
+        testData.add(new TestData("in test, #18 keywords = \"princess\", brands = McCall's, Burda, categories = null", "princess", new int[] {(int) mydb.getBrand("McCall's"), (int) mydb.getBrand("Burda")}, null, 3));
+        testData.add(new TestData("in test, #19 keywords = \"princess\", brands = McCall's, Burda, categories = Business/Casual", "princess", new int[] {(int) mydb.getBrand("McCall's"), (int) mydb.getBrand("Burda")}, new int[] {(int) mydb.getCategory("Business/Casual")}, 1));
+        testData.add(new TestData("in test, #20 keywords = \"princess\", brands = McCall's, Burda, categories = Business/Casual, Formal", "princess", new int[] {(int) mydb.getBrand("McCall's"), (int) mydb.getBrand("Burda")}, new int[] {(int) mydb.getCategory("Business/Casual"), (int) mydb.getCategory("Formal")}, 2));
+        testData.add(new TestData("in test, #21 keywords = \"dress princess\", brands = null, categories = null","dress princess", null, null, 3));
+        testData.add(new TestData("in test, #22 keywords = \"dress princess\", brands = null, categories = Business/Casual","dress princess", null, new int[] {(int) mydb.getCategory("Business/Casual")}, 1));
+        testData.add(new TestData("in test, #23 keywords = \"dress princess\", brands = null, categories = Business/Casual, Formal","princess dress", null, new int[] {(int) mydb.getCategory("Business/Casual"), (int) mydb.getCategory("Formal")}, 2));
+        testData.add(new TestData("in test, #24 keywords = \"princess dress\", brands = McCall's, categories = null", "princess dress", new int[] {(int) mydb.getBrand("McCall's")}, null, 3));
+        testData.add(new TestData("in test, #25 keywords = \"princess dress\", brands = McCall's, categories = Formal", "princess dress", new int[] {(int) mydb.getBrand("McCall's")}, new int[] {(int) mydb.getCategory("Formal")}, 1));
+        testData.add(new TestData("in test, #26 keywords = \"princess dress\", brands = McCall's, categories = Leisure, Formal", "princess dress", new int[] {(int) mydb.getBrand("McCall's")}, new int[] {(int) mydb.getCategory("Leisure"), (int) mydb.getCategory("Formal")}, 2));
+        testData.add(new TestData("in test, #27 keywords = \"princess dress\", brands = McCall's, Burda, categories = null", "princess dress", new int[] {(int) mydb.getBrand("McCall's"), (int) mydb.getBrand("Burda")}, null, 3));
+        testData.add(new TestData("in test, #28 keywords = \"princess dress\", brands = McCall's, Burda, categories = Leisure", "princess dress", new int[] {(int) mydb.getBrand("McCall's"), (int) mydb.getBrand("Burda")}, new int[] {(int) mydb.getCategory("Leisure")}, 1));
+        testData.add(new TestData("in test, #29 keywords = \"princess dress\", brands = McCall's, Burda, categories = Leisure, Formal", "princess dress", new int[] {(int) mydb.getBrand("McCall's"), (int) mydb.getBrand("Burda")}, new int[] {(int) mydb.getCategory("Leisure"), (int) mydb.getCategory("Formal")}, 2));
+
+        return testData;
+    }
+
+    private List<TestData> createTestDataForDebug(){
+        List<TestData> testData = new ArrayList<>();
+
+        testData.add(new TestData("in test, #1 keywords = null, brands = null, categories = null",null, null, null, 7));
+        testData.add(new TestData("in test, #4a keywords = null, brands = null, categories = Leisure",null, null, new int[] {(int) mydb.getCategory("Leisure")}, 1));
+        testData.add(new TestData("in test, #4b keywords = null, brands = null, categories = Kids",null, null, new int[] {(int) mydb.getCategory("Kids")}, 3));
+        testData.add(new TestData("in test, #6a keywords = null, brands = Burda, categories = null", null, new int[] {(int) mydb.getBrand("Burda")}, null, 1));
+        testData.add(new TestData("in test, #6b keywords = null, brands = McCall's, categories = null", null, new int[] {(int) mydb.getBrand("McCall's")}, null, 5));
+        testData.add(new TestData("in test, #7a keywords = null, brands = McCall's, categories = Leisure", null, new int[] {(int) mydb.getBrand("McCall's")}, new int[] {(int) mydb.getCategory("Leisure")}, 1));
+        testData.add(new TestData("in test, #7b keywords = null, brands = McCall's, categories = Kids", null, new int[] {(int) mydb.getBrand("McCall's")}, new int[] {(int) mydb.getCategory("Kids")}, 2));
+        testData.add(new TestData("in test, #8 keywords = null, brands = McCall's, categories = Kids, Leisure", null, new int[] {(int) mydb.getBrand("McCall's")}, new int[] {(int) mydb.getCategory("Kids"), (int) mydb.getCategory("Leisure")}, 3));
+
+        return testData;
+    }
+}
+
+class TestData{
+    String mTestMsg;
+    String mTestKeywords;
+    int[] mTestBrands;
+    int[] mTestCategories;
+    int mTestExpected;
+
+    TestData(String msg, String key, int[] brand, int[] cate, int expect){
+        mTestMsg = msg;
+        mTestKeywords = key;
+        mTestBrands = brand;
+        mTestCategories = cate;
+        mTestExpected = expect;
+    }
+
+    public String getMsg(){ return mTestMsg; }
+    public String getKeyWords(){ return mTestKeywords;}
+    public int[] getBrands(){return mTestBrands;}
+    public int[] getCategories(){return mTestCategories;}
+    public int getExpected(){return mTestExpected;}
+
 }

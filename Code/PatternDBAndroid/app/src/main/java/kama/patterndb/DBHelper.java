@@ -365,56 +365,59 @@ public class DBHelper extends SQLiteOpenHelper {
     public List<Pattern> getPatternsMatching(String keywords, int[] brands, int[] categories){
         List<Pattern> patterns = new ArrayList<>();
 
-        //build select Query
-        String selectQuery = "SELECT * FROM " + PATTERN_TABLE_NAME;
+        //FIXME there is an issue where if there is a brand and a category it doesn't return anything. Because I over complicated it
+        //need something like: SELECT * FROM pattern LEFT JOIN patternCategory ON pattern.patternID = patternCategory.patternID WHERE categoryID = "+getCategory("Leisure")+" AND brandID = "+ getBrand("McCall's")+" GROUP BY pattern.patternID
 
-        if(categories != null){
-            selectQuery = selectQuery.concat(" LEFT JOIN " + PATTERNCATEGORY_TABLE_NAME +
-                    " ON " + PATTERN_TABLE_NAME + "." + PATTERN_COLUMN_PATTERNID + " = " +PATTERNCATEGORY_TABLE_NAME + "." + PATTERNCATEGORY_COLUMN_PATTERNID);
-        }
+        //build select Query
+        String queryStart = "SELECT * FROM " + PATTERN_TABLE_NAME;
+        String queryJoin = " LEFT JOIN " + PATTERNCATEGORY_TABLE_NAME + " ON " + PATTERN_TABLE_NAME + "." + PATTERN_COLUMN_PATTERNID + " = " +PATTERNCATEGORY_TABLE_NAME + "." + PATTERNCATEGORY_COLUMN_PATTERNID;
+        String queryGroupBy = " GROUP BY " + PATTERN_TABLE_NAME + "." +  PATTERN_COLUMN_PATTERNID + " ";
+        String selectQuery = queryStart;
 
         if(keywords != null || brands != null || categories != null){
-            selectQuery = selectQuery.concat(" WHERE ");
+            selectQuery = selectQuery.concat(queryJoin + " WHERE ");
         }
 
         if(keywords != null && brands == null && categories == null){
+            keywords = keywords.trim(); //this is to deal with keywords of just spaces
             if(keywords.isEmpty()){
-                selectQuery = selectQuery.substring(0, selectQuery.length()-7);
+                selectQuery = selectQuery.substring(0, selectQuery.length()-(queryJoin.length()+7));
             }
-        }
-
-        if(brands != null){
-            // if brands is more than one need to build " 1 OR 2 OR 3 AND "
-            selectQuery = selectQuery.concat(PATTERN_COLUMN_BRANDID + " = " + brands[0]);
-            if(brands.length > 1){
-                for(int i = 1; i < brands.length; i++){
-                    selectQuery = selectQuery.concat(" OR " + PATTERN_COLUMN_BRANDID +" = " + brands[i]);
-                }
-            }
-        }
-
-        //need to put an "AND" in if there is brands prior
-        if(brands != null){
-            selectQuery = selectQuery.concat(" AND ");
         }
 
         if(categories != null) {
             // if categories is more than one need to build " 1 OR 2 OR 3 AND "
-            selectQuery = selectQuery.concat(PATTERNCATEGORY_COLUMN_CATEGORYID + " = " + categories[0]);
+            selectQuery = selectQuery.concat("(" + PATTERNCATEGORY_COLUMN_CATEGORYID + " = " + categories[0]);
             if(categories.length > 1){
                 for(int i = 1; i < categories.length; i++){
                     selectQuery = selectQuery.concat(" OR "  + PATTERNCATEGORY_COLUMN_CATEGORYID + " = " + categories[i]);
                 }
             }
+            selectQuery = selectQuery.concat(") ");
         }
 
-        //need to put an "AND" in if there are categories or brands prior
-        if(categories != null){
-            selectQuery = selectQuery.concat(" AND ");
+        if(brands != null){
+            //need to put an "AND" in if there is categories prior
+            if(categories != null){
+                selectQuery = selectQuery.concat(" AND ");
+            }
+            // if brands is more than one need to build " 1 OR 2 OR 3 AND "
+            selectQuery = selectQuery.concat("(" + PATTERN_COLUMN_BRANDID + " = " + brands[0]);
+            if(brands.length > 1){
+                for(int i = 1; i < brands.length; i++){
+                    selectQuery = selectQuery.concat(" OR " + PATTERN_COLUMN_BRANDID +" = " + brands[i]);
+                }
+            }
+            selectQuery = selectQuery.concat(") ");
         }
 
         // if keywords is more than one word (separated by spaces) split it up for an AND search that is not necessarily in that order
         if(keywords != null) {
+            //need to put an "UNION" and select stuff in if there are categories or brands prior
+            if(categories != null  || brands != null){
+                selectQuery = selectQuery.concat(" INTERSECT " + queryStart + queryJoin + " WHERE ");
+            }
+
             if(!keywords.isEmpty()){String[] words = keywords.split(" ");
 
                 for (String key : words) {
@@ -424,6 +427,11 @@ public class DBHelper extends SQLiteOpenHelper {
                 selectQuery = selectQuery.substring(0, selectQuery.lastIndexOf("OR"));
             }
         }
+
+        selectQuery = selectQuery.concat(queryGroupBy);
+
+        //debugging, delete this later
+        //selectQuery = "SELECT * FROM pattern p1 LEFT JOIN patternCategory ON p1.patternID = patternCategory.patternID WHERE categoryID = "+getCategory("Leisure")+" AND brandID = "+ getBrand("McCall's")+" GROUP BY 1";
 
         Log.d("myApp", "getPatternsMatching select query is: " + selectQuery);
 
