@@ -146,9 +146,70 @@ public class DBHelper extends SQLiteOpenHelper {
         return id;
     }
 
-    //TODO all the queries below
     //update pattern
+    public boolean updatePattern(Pattern updated){
+        boolean status = true; //change to false if update failed
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(PATTERN_COLUMN_PATTERNNUM, updated.getNum());
+
+        String whereClause = PATTERN_COLUMN_PATTERNID + " = " + updated.getUID();
+
+        int changeCount =  db.update(BRAND_TABLE_NAME, contentValues, whereClause, null);
+
+        //category will need to check that any removed are removed
+        Cursor categories = db.rawQuery("SELECT * FROM " + PATTERNCATEGORY_TABLE_NAME + " WHERE " + PATTERNCATEGORY_COLUMN_PATTERNID + " = " + updated.getUID(), null);
+        int[] compareToThisUpdated = updated.getCategory();
+        boolean thisCatIsInUpdate = false;
+
+        if(categories.moveToFirst()){
+            do {
+                int thisCat = categories.getInt(categories.getColumnIndex(PATTERNCATEGORY_COLUMN_CATEGORYID));
+                //if thisCAt is in updateCat fine
+                for(int cat : compareToThisUpdated){
+                    if(thisCat == cat){
+                        thisCatIsInUpdate = true;
+                    }
+                }
+
+                //if thisCat is not in updateCat delete
+                if(!thisCatIsInUpdate){
+                    db.delete(PATTERNCATEGORY_TABLE_NAME, PATTERNCATEGORY_COLUMN_PATTERNID + " = " + updated.getUID() + " AND " + PATTERNCATEGORY_COLUMN_CATEGORYID + " = " + thisCat, null);
+                }
+
+                thisCatIsInUpdate = false;
+
+            }while(categories.moveToNext());
+        }
+
+        for(int i = 0; i< compareToThisUpdated.length; i++){
+            //if this category is already there, fine
+            //TODO finish this
+            //if this category is not there, add
+        }
+
+        db.close();
+
+        if(changeCount<1){status = false;}
+
+        return status;
+    }
+
     //delete pattern
+    public boolean deletePattern(long id){
+        boolean status = true;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        int catDelCount = db.delete(PATTERNCATEGORY_TABLE_NAME, PATTERNCATEGORY_COLUMN_PATTERNID + " = " + id, null);
+        int patDelCount = db.delete(PATTERN_TABLE_NAME, PATTERN_COLUMN_PATTERNID + " = " + id, null);
+
+        if(catDelCount < 1 || patDelCount <1){status = false;}
+
+        return status;
+    }
 
     //get pattern by id
     public Pattern getPatternById(Long id){
@@ -365,9 +426,6 @@ public class DBHelper extends SQLiteOpenHelper {
     public List<Pattern> getPatternsMatching(String keywords, int[] brands, int[] categories){
         List<Pattern> patterns = new ArrayList<>();
 
-        //FIXME there is an issue where if there is a brand and a category it doesn't return anything. Because I over complicated it
-        //need something like: SELECT * FROM pattern LEFT JOIN patternCategory ON pattern.patternID = patternCategory.patternID WHERE categoryID = "+getCategory("Leisure")+" AND brandID = "+ getBrand("McCall's")+" GROUP BY pattern.patternID
-
         //build select Query
         String queryStart = "SELECT * FROM " + PATTERN_TABLE_NAME;
         String queryJoin = " LEFT JOIN " + PATTERNCATEGORY_TABLE_NAME + " ON " + PATTERN_TABLE_NAME + "." + PATTERN_COLUMN_PATTERNID + " = " +PATTERNCATEGORY_TABLE_NAME + "." + PATTERNCATEGORY_COLUMN_PATTERNID;
@@ -429,9 +487,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         selectQuery = selectQuery.concat(queryGroupBy);
-
-        //debugging, delete this later
-        //selectQuery = "SELECT * FROM pattern p1 LEFT JOIN patternCategory ON p1.patternID = patternCategory.patternID WHERE categoryID = "+getCategory("Leisure")+" AND brandID = "+ getBrand("McCall's")+" GROUP BY 1";
 
         Log.d("myApp", "getPatternsMatching select query is: " + selectQuery);
 

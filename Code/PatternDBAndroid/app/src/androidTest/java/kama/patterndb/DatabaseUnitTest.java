@@ -195,11 +195,20 @@ public class DatabaseUnitTest {
     @Test
     @Ignore
     public void updateEntry() {
+        Pattern p = new Pattern("toBeChanged", 1, "big", new int[] {1, 2}, "This is the original description", "here", "there");
+        long pNum = mydb.insertPattern(p);
+
         //find a pattern
+        Pattern found = mydb.getPatternById(pNum);
+
         //set new pattern dets
+        found.setDescription("This is the new description");
+
         //send it to the db
+        mydb.updatePattern(found);
 
         //confirm the entry has been updated
+        assertEquals(mydb.getPatternById(pNum), found);
     }
 
     @Test

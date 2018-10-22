@@ -58,7 +58,7 @@ public class SearchFragment extends Fragment {
         mSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO need to query DB for pattern number and/or keywords
+                //TODO need to query DB for pattern number and/or keywords and/or category/s and/or brand/s
                 Toast.makeText(v.getContext(), "I will search for something", Toast.LENGTH_SHORT).show();
             }
         });
