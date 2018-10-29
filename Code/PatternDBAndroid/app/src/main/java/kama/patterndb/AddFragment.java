@@ -332,7 +332,7 @@ public class AddFragment extends Fragment {
                 category = new int[] {1,2}; //TODO get list of category ids
                 //TODO get and set the various variables to pass to the pattern
                 Pattern pattern = new Pattern(patternNum, 1, "Size", category, "description", "directory for cover image", "directory for back image");
-                Long id = mydb.insertPattern(pattern);
+                int id = mydb.insertPattern(pattern);
                 Toast.makeText(v.getContext(), "pattern "+id+" saved", Toast.LENGTH_SHORT).show();
                 //TODO clear or refresh the add screen to empty fields
             }

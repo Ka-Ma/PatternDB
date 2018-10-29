@@ -111,10 +111,10 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //new pattern
-    public long insertPattern(Pattern pattern) {
+    public int insertPattern(Pattern pattern) {
         Log.d("myApp", "inserting entry into db");
 
-        long id;
+        int id;
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -130,7 +130,7 @@ public class DBHelper extends SQLiteOpenHelper {
         contentValues.put(PATTERN_COLUMN_BACKIMAGE, pattern.getBackImageLocn());
 
         //insert row
-        id = db.insert(PATTERN_TABLE_NAME, null, contentValues);
+        id = (int) db.insert(PATTERN_TABLE_NAME, null, contentValues);
 
         //for each category
         for(int category: pattern.getCategory()) {
@@ -154,43 +154,69 @@ public class DBHelper extends SQLiteOpenHelper {
 
         ContentValues contentValues = new ContentValues();
         contentValues.put(PATTERN_COLUMN_PATTERNNUM, updated.getNum());
+        contentValues.put(PATTERN_COLUMN_BRANDID, updated.getBrand());
+        contentValues.put(PATTERN_COLUMN_SIZERANGE, updated.getSizeRange());
+        //what about categories? See below
+        contentValues.put(PATTERN_COLUMN_DESCRIPTION, updated.getDescription());
+        contentValues.put(PATTERN_COLUMN_COVERIMAGE, updated.getCoverImageLocn());
+        contentValues.put(PATTERN_COLUMN_BACKIMAGE, updated.getBackImageLocn());
 
         String whereClause = PATTERN_COLUMN_PATTERNID + " = " + updated.getUID();
 
-        int changeCount =  db.update(BRAND_TABLE_NAME, contentValues, whereClause, null);
+        int changeCount =  db.update(PATTERN_TABLE_NAME, contentValues, whereClause, null);
+        Log.d("MyApp", "***IN updatePattern(): updated " + changeCount + " entry/s");
 
-        //category will need to check that any removed are removed
-        Cursor categories = db.rawQuery("SELECT * FROM " + PATTERNCATEGORY_TABLE_NAME + " WHERE " + PATTERNCATEGORY_COLUMN_PATTERNID + " = " + updated.getUID(), null);
-        int[] compareToThisUpdated = updated.getCategory();
-        boolean thisCatIsInUpdate = false;
+        if(changeCount > 0){
+            //category will need to check that any removed are removed
+            Cursor categories = db.rawQuery("SELECT * FROM " + PATTERNCATEGORY_TABLE_NAME + " WHERE " + PATTERNCATEGORY_COLUMN_PATTERNID + " = " + updated.getUID(), null);
+            int[] compareToThisUpdated = updated.getCategory();
+            boolean thisCatIsInUpdate = false;
 
-        if(categories.moveToFirst()){
-            do {
-                int thisCat = categories.getInt(categories.getColumnIndex(PATTERNCATEGORY_COLUMN_CATEGORYID));
-                //if thisCAt is in updateCat fine
-                for(int cat : compareToThisUpdated){
-                    if(thisCat == cat){
+            if(categories.moveToFirst()){
+                do {
+                    int thisCat = categories.getInt(categories.getColumnIndex(PATTERNCATEGORY_COLUMN_CATEGORYID));
+                    //if thisCAt is in updateCat fine
+                    for(int cat : compareToThisUpdated){
+                        if(thisCat == cat){
+                            thisCatIsInUpdate = true;
+                        }
+                    }
+
+                    //if thisCat is not in updateCat delete
+                    if(!thisCatIsInUpdate){
+                        db.delete(PATTERNCATEGORY_TABLE_NAME, PATTERNCATEGORY_COLUMN_PATTERNID + " = " + updated.getUID() + " AND " + PATTERNCATEGORY_COLUMN_CATEGORYID + " = " + thisCat, null);
+                    }
+
+                    thisCatIsInUpdate = false;
+
+                }while(categories.moveToNext());
+            }
+
+            for(int i = 0; i< compareToThisUpdated.length; i++){
+                //if this category is already there, fine
+                int thisCat = compareToThisUpdated[i];
+
+                categories.moveToFirst();
+                do {
+                    if(thisCat == categories.getInt(categories.getColumnIndex((PATTERNCATEGORY_COLUMN_CATEGORYID)))){
                         thisCatIsInUpdate = true;
                     }
-                }
+                }while(categories.moveToNext());
 
-                //if thisCat is not in updateCat delete
+                //if this category is not there, add
                 if(!thisCatIsInUpdate){
-                    db.delete(PATTERNCATEGORY_TABLE_NAME, PATTERNCATEGORY_COLUMN_PATTERNID + " = " + updated.getUID() + " AND " + PATTERNCATEGORY_COLUMN_CATEGORYID + " = " + thisCat, null);
+                    ContentValues categoryValues = new ContentValues();
+                    categoryValues.put(PATTERNCATEGORY_COLUMN_PATTERNID, updated.getUID());
+                    categoryValues.put(PATTERNCATEGORY_COLUMN_CATEGORYID, thisCat);
+
+                    db.insert(PATTERNCATEGORY_TABLE_NAME, null, categoryValues);
                 }
 
                 thisCatIsInUpdate = false;
+            }
 
-            }while(categories.moveToNext());
+            db.close();
         }
-
-        for(int i = 0; i< compareToThisUpdated.length; i++){
-            //if this category is already there, fine
-            //TODO finish this
-            //if this category is not there, add
-        }
-
-        db.close();
 
         if(changeCount<1){status = false;}
 
@@ -198,7 +224,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //delete pattern
-    public boolean deletePattern(long id){
+    public boolean deletePattern(int id){
         boolean status = true;
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -212,22 +238,24 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //get pattern by id
-    public Pattern getPatternById(Long id){
+    //if pattern not there the pattern returned will have a UID of -1
+    public Pattern getPatternById(int id){
         Pattern p = new Pattern();
 
         String selectQuery = "SELECT * FROM " + PATTERN_TABLE_NAME + " WHERE " + PATTERN_COLUMN_PATTERNID + " = ? ";
 
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, new String[] { Long.toString(id)});
+        Cursor cursor = db.rawQuery(selectQuery, new String[] { Integer.toString(id)});
 
         String subQuery = "SELECT * FROM " + PATTERNCATEGORY_TABLE_NAME + " WHERE " + PATTERNCATEGORY_COLUMN_PATTERNID + " = ? ";
 
         if(cursor.moveToFirst()){
+            p.setUID(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //uniquie identifier
             p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
             p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
             p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
             //sub query for associative table
-            Cursor subCursor = db.rawQuery(subQuery, new String[] {Long.toString(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
+            Cursor subCursor = db.rawQuery(subQuery, new String[] {Integer.toString(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
             List<Integer> categories = new ArrayList<>();
             if(subCursor.moveToFirst()){
                 do{
@@ -262,12 +290,12 @@ public class DBHelper extends SQLiteOpenHelper {
             do{
                 Pattern p = new Pattern();
 
-                p.setUID(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
+                p.setUID(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
                 p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
                 p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
                 p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
                 //sub query for associative table
-                Cursor subCursor = db.rawQuery(subQuery, new String[] {Long.toString(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
+                Cursor subCursor = db.rawQuery(subQuery, new String[] {Integer.toString(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
                 List<Integer> categories = new ArrayList<>();
                 if(subCursor.moveToFirst()){
                     do{
@@ -305,12 +333,12 @@ public class DBHelper extends SQLiteOpenHelper {
             do{
                 Pattern p = new Pattern();
 
-                p.setUID(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
+                p.setUID(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
                 p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
                 p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
                 p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
                 //sub query for associative table
-                Cursor subCursor = db.rawQuery(subQuery, new String[] {Long.toString(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
+                Cursor subCursor = db.rawQuery(subQuery, new String[] {Integer.toString(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
                 List<Integer> categories = new ArrayList<>();
                 if(subCursor.moveToFirst()){
                     do{
@@ -334,7 +362,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //get patterns by brand
-    public List<Pattern> getPatternByBrand(long brand){
+    public List<Pattern> getPatternByBrand(int brand){
         List<Pattern> patterns = new ArrayList<>();
 
         String selectQuery = "SELECT * FROM " + PATTERN_TABLE_NAME + " WHERE " + PATTERN_COLUMN_BRANDID + " = " + brand;
@@ -348,12 +376,12 @@ public class DBHelper extends SQLiteOpenHelper {
             do{
                 Pattern p = new Pattern();
 
-                p.setUID(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
+                p.setUID(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
                 p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
                 p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
                 p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
                 //sub query for associative table
-                Cursor subCursor = db.rawQuery(subQuery, new String[] {Long.toString(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
+                Cursor subCursor = db.rawQuery(subQuery, new String[] {Integer.toString(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
                 List<Integer> categories = new ArrayList<>();
                 if(subCursor.moveToFirst()){
                     do{
@@ -377,7 +405,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //get list of patterns by category
-    public List<Pattern> getPatternByCategory(long category){
+    public List<Pattern> getPatternByCategory(int category){
         List<Pattern> patterns = new ArrayList<>();
 
         String selectQuery = "SELECT * FROM " + PATTERN_TABLE_NAME +
@@ -394,12 +422,12 @@ public class DBHelper extends SQLiteOpenHelper {
             do{
                 Pattern p = new Pattern();
 
-                p.setUID(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
+                p.setUID(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
                 p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
                 p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
                 p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
                 //sub query for associative table
-                Cursor subCursor = db.rawQuery(subQuery, new String[] {Long.toString(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
+                Cursor subCursor = db.rawQuery(subQuery, new String[] {Integer.toString(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
                 List<Integer> categories = new ArrayList<>();
                 if(subCursor.moveToFirst()){
                     do{
@@ -501,12 +529,12 @@ public class DBHelper extends SQLiteOpenHelper {
             do{
                 Pattern p = new Pattern();
 
-                p.setUID(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
+                p.setUID(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
                 p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
                 p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
                 p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
                 //sub query for associative table
-                Cursor subCursor = db.rawQuery(subQuery, new String[] {Long.toString(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
+                Cursor subCursor = db.rawQuery(subQuery, new String[] {Integer.toString(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
                 List<Integer> tempCategories = new ArrayList<>();
                 if(subCursor.moveToFirst()){
                     do{
@@ -544,12 +572,12 @@ public class DBHelper extends SQLiteOpenHelper {
             do{
                 Pattern p = new Pattern();
 
-                p.setUID(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
+                p.setUID(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID))); //unique db identifer
                 p.setNum(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNNUM))); //String num,
                 p.setBrand(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_BRANDID)));  //int brand,
                 p.setSizeRange(cursor.getString(cursor.getColumnIndex(PATTERN_COLUMN_SIZERANGE))); //String sizeRange,
                 //sub query for associative table
-                Cursor subCursor = db.rawQuery(subQuery, new String[] {Long.toString(cursor.getLong(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
+                Cursor subCursor = db.rawQuery(subQuery, new String[] {Integer.toString(cursor.getInt(cursor.getColumnIndex(PATTERN_COLUMN_PATTERNID)))});
                 List<Integer> categories = new ArrayList<>();
                 if(subCursor.moveToFirst()){
                     do{
@@ -586,7 +614,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //update brand
-    public int updateBrand(long id, String brand){
+    public int updateBrand(int id, String brand){
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues contentValues = new ContentValues();
@@ -603,10 +631,10 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //delete brand
-    public void deleteBrand(long id){
+    public void deleteBrand(int id){
         SQLiteDatabase db = this.getWritableDatabase();
 
-        db.delete(BRAND_TABLE_NAME, BRAND_COLUMN_BRANDID + " = ? ", new String[] {Long.toString(id)});
+        db.delete(BRAND_TABLE_NAME, BRAND_COLUMN_BRANDID + " = ? ", new String[] {Integer.toString(id)});
 
         db.close();
     }
@@ -619,7 +647,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //get brand by id
-    public String getBrand(long id){
+    public String getBrand(int id){
         SQLiteDatabase db = this.getReadableDatabase();
 
         String selectQuery = "SELECT * FROM " + BRAND_TABLE_NAME + " WHERE " + BRAND_COLUMN_BRANDID + "=" + id;
@@ -632,7 +660,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //get brand by name
-    public long getBrand(String brand){
+    public int getBrand(String brand){
         SQLiteDatabase db = this.getReadableDatabase();
 
         String selectQuery = "SELECT * FROM " + BRAND_TABLE_NAME + " WHERE " + BRAND_COLUMN_BRAND + " = ? ";
@@ -642,7 +670,7 @@ public class DBHelper extends SQLiteOpenHelper {
         Log.d("myApp", "looking for "+brand+", cursor has found " + cursor.getCount());
         cursor.moveToFirst();
 
-        return cursor.getLong(cursor.getColumnIndex(BRAND_COLUMN_BRANDID));
+        return cursor.getInt(cursor.getColumnIndex(BRAND_COLUMN_BRANDID));
     }
 
     //get list of brands
@@ -680,7 +708,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //update category
-    public void updateCategory(long id, String category){
+    public void updateCategory(int id, String category){
         SQLiteDatabase db = this.getWritableDatabase();
 
         //prep new values
@@ -688,23 +716,23 @@ public class DBHelper extends SQLiteOpenHelper {
         contentValues.put(CATEGORY_COLUMN_CATEGORY, category);
 
         //run update query
-        db.update(CATEGORY_TABLE_NAME, contentValues, CATEGORY_COLUMN_CATEGORYID + " = ? ", new String[] {Long.toString(id)});
+        db.update(CATEGORY_TABLE_NAME, contentValues, CATEGORY_COLUMN_CATEGORYID + " = ? ", new String[] {Integer.toString(id)});
 
         db.close();
     }
 
     //delete category
-    public void deleteCategory(long id){
+    public void deleteCategory(int id){
         SQLiteDatabase db = this.getWritableDatabase();
 
-        db.delete(CATEGORY_TABLE_NAME, CATEGORY_COLUMN_CATEGORYID + " = ? ", new String[] {Long.toString(id)});
+        db.delete(CATEGORY_TABLE_NAME, CATEGORY_COLUMN_CATEGORYID + " = ? ", new String[] {Integer.toString(id)});
 
         db.close();
     }
 
     //get category by name
-    public long getCategory(String category){
-        long id;
+    public int getCategory(String category){
+        int id;
 
         String selectQuery = "SELECT * FROM " + CATEGORY_TABLE_NAME + " WHERE " + CATEGORY_COLUMN_CATEGORY + " = ?";
 
@@ -717,7 +745,7 @@ public class DBHelper extends SQLiteOpenHelper {
         if(cursor.getCount() == 0){
             id = -1;
         }else {
-            id = cursor.getLong(cursor.getColumnIndex(CATEGORY_COLUMN_CATEGORYID));
+            id = cursor.getInt(cursor.getColumnIndex(CATEGORY_COLUMN_CATEGORYID));
         }
         cursor.close();
         db.close();
@@ -726,7 +754,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //get category by id
-    public String getCategory(long id){
+    public String getCategory(int id){
         String result;
 
         String selectQuery = "SELECT * FROM " + CATEGORY_TABLE_NAME + " WHERE " + CATEGORY_COLUMN_CATEGORYID + " = " + id;

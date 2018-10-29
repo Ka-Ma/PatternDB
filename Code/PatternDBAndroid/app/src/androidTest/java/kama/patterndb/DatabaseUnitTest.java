@@ -18,6 +18,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 
@@ -102,7 +103,7 @@ public class DatabaseUnitTest {
     @Test
     public void updateBrand(){
         mydb.insertBrand("testTOCHANGEBrand");
-        long id = mydb.getBrand("testTOCHANGEBrand");
+        int id = mydb.getBrand("testTOCHANGEBrand");
         int result = mydb.updateBrand(id, "testCHANGEDBrand");
 
         assertEquals(1, result);
@@ -110,7 +111,7 @@ public class DatabaseUnitTest {
 
     @Test
     public void deleteBrand(){
-        long id = mydb.getBrand(brand1);
+        int id = mydb.getBrand(brand1);
         mydb.deleteBrand(id);
         List<String> results = mydb.getAllBrands();
 
@@ -162,7 +163,7 @@ public class DatabaseUnitTest {
     @Test
     public void updateCategory(){
         String expected = cat1 + "updated";
-        long id = mydb.getCategory(cat1);
+        int id = mydb.getCategory(cat1);
         mydb.updateCategory(id, expected);
         String results = mydb.getCategory(id);
 
@@ -171,7 +172,7 @@ public class DatabaseUnitTest {
 
     @Test
     public void deleteCategory(){
-        long id = mydb.getCategory("test1Category");
+        int id = mydb.getCategory("test1Category");
         mydb.deleteCategory(id);
         List<String> results = mydb.getAllCategories();
 
@@ -193,31 +194,50 @@ public class DatabaseUnitTest {
     }
 
     @Test
-    @Ignore
     public void updateEntry() {
         Pattern p = new Pattern("toBeChanged", 1, "big", new int[] {1, 2}, "This is the original description", "here", "there");
-        long pNum = mydb.insertPattern(p);
+        int pNum = mydb.insertPattern(p);
+        p.setUID(pNum);
 
         //find a pattern
         Pattern found = mydb.getPatternById(pNum);
 
         //set new pattern dets
         found.setDescription("This is the new description");
+        found.setCategory(new int[] {1,3});
 
         //send it to the db
         mydb.updatePattern(found);
 
+        //debug log
+        Log.d("myTest", "original: ");
+        printToScreen(p);
+        Log.d("myTest", "changed: ");
+        printToScreen(found);
+
         //confirm the entry has been updated
-        assertEquals(mydb.getPatternById(pNum), found);
+        Pattern fromDB = mydb.getPatternById(pNum);
+        assertEquals(fromDB.getUID(), found.getUID());
+        assertEquals(fromDB.getNum(), found.getNum());
+        assertEquals(fromDB.getBrand(), found.getBrand());
+        assertEquals(fromDB.getDescription(), found.getDescription());
+        assertEquals(fromDB.getSizeRange(), found.getSizeRange());
+        assertArrayEquals(fromDB.getCategory(), found.getCategory());
+        assertEquals(fromDB.getCoverImageLocn(), found.getCoverImageLocn());
+        assertEquals(fromDB.getBackImageLocn(), found.getBackImageLocn());
     }
 
     @Test
-    @Ignore
     public void deleteEntry(){
-        //find a pattern
-        //delete a pattern
+        //find a pattern, let's just get the first one
 
-        //confirm the entry no longer exists
+        //delete a pattern
+        mydb.deletePattern(1);
+
+        //confirm the entry no longer exists)
+        Log.d("myTest", "after pattern 1 deleted get " + mydb.getPatternById(1).getUID());
+        printToScreen(mydb.getPatternById(1));
+        assertEquals(-1, mydb.getPatternById(1).getUID());
     }
 
     @Test
@@ -395,7 +415,7 @@ public class DatabaseUnitTest {
         List<Pattern> result = new ArrayList<Pattern>();
 
         //get existing patterns for expected and setting UID
-        result.add(mydb.getPatternById((long)1));
+        result.add(mydb.getPatternById(1));
         result.get(0).setUID(1);
 
         //add new patterns for expected
@@ -454,12 +474,14 @@ public class DatabaseUnitTest {
     }
 
     private void printToScreen(Pattern p){
-        String msg = "UID: " + p.getUID() + " Number: " + p.getNum() + " Brand: " + mydb.getBrand(p.getBrand()) + " Categories: ";
-        for(int cat : p.getCategory()){
-            msg = msg.concat(mydb.getCategory(cat) + ", ");
+        if(p.getUID() > 0){
+            String msg = "UID: " + p.getUID() + " Number: " + p.getNum() + " Brand: " + mydb.getBrand(p.getBrand()) + " Categories: ";
+            for(int cat : p.getCategory()){
+                msg = msg.concat(mydb.getCategory(cat) + ", ");
+            }
+            msg = msg.concat(" Desc: " + p.getDescription());
+            Log.d("myTest", msg );
         }
-        msg = msg.concat(" Desc: " + p.getDescription());
-        Log.d("myTest", msg );
     }
 
     private List<TestData> createTestData(){
