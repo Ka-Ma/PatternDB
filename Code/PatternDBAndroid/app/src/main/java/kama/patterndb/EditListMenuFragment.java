@@ -16,6 +16,7 @@ public class EditListMenuFragment extends Fragment {
     Button mBackButton;
 
     BrandListFragment brandListFragment;
+    CategoryListFragment categoryListFragment;
 
     DBHelper mydb;
 
@@ -50,11 +51,14 @@ public class EditListMenuFragment extends Fragment {
         mBrandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO open brand list fragment with option to add/edit/delete
                 brandListFragment = BrandListFragment.newInstance();
                 android.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
                 ft.replace(R.id.fragment_container, brandListFragment);
+                ft.addToBackStack(null);
+                ft.setTransition(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
                 ft.commit();
+
+
             }
         });
 
@@ -62,8 +66,12 @@ public class EditListMenuFragment extends Fragment {
         mCategoryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO open category list fragment with option to add/edit/delete
-                Toast.makeText(v.getContext(), "I will list categories", Toast.LENGTH_SHORT).show();
+                categoryListFragment = CategoryListFragment.newInstance();
+                android.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+                ft.replace(R.id.fragment_container, categoryListFragment);
+                ft.addToBackStack(null);
+                ft.setTransition(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                ft.commit();
             }
         });
 

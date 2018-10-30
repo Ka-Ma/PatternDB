@@ -1,13 +1,10 @@
 package kama.patterndb;
 
-import android.annotation.SuppressLint;
 import android.app.ListFragment;
 import android.os.Bundle;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -16,13 +13,13 @@ import android.widget.Toast;
 
 import java.util.List;
 
-public class BrandListFragment extends ListFragment implements OnItemClickListener {
+public class CategoryListFragment extends ListFragment implements OnItemClickListener {
     DBHelper mydb;
 
-    Button mAdd; //TODO need to be able to edit brands list
+    Button mAdd; //TODO need to be able to edit list
 
-    public static BrandListFragment newInstance(){
-        BrandListFragment f = new BrandListFragment();
+    public static CategoryListFragment newInstance(){
+        CategoryListFragment f = new CategoryListFragment();
 
         //any args in Bundle
         //Bundle args = new Bundle();
@@ -47,11 +44,11 @@ public class BrandListFragment extends ListFragment implements OnItemClickListen
 
         mydb = new DBHelper(getActivity());
 
-        List<String> brands = mydb.getAllBrands();
-        ArrayAdapter<String> brandAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, brands);
-        brandAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        List<String> categories = mydb.getAllCategories();
+        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, categories);
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        setListAdapter(brandAdapter);
+        setListAdapter(categoryAdapter);
         getListView().setOnItemClickListener(this);
     }
 

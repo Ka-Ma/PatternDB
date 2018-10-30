@@ -74,8 +74,8 @@
             android:id="@+id/label_search_help"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_column="0"
-            android:layout_row="3"
+            android:layout_column="1"
+            android:layout_row="4"
             android:layout_columnSpan="2"
 
             android:padding="5dp"
@@ -84,10 +84,25 @@
     </GridLayout>
 
     <!--//TODO Add category list select, add brand list select-->
-    <ListView
-        android:id="@+id/list_search_category"
+    <!--
+    <Spinner
+        android:id="@+id/search_spinner_category"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"></ListView>
+        android:layout_height="wrap_content"></Spinner>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="209dp">
+
+        <ListView
+            android:id="@+id/list_search_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"></ListView>
+
+    </ScrollView>
+    -->
 
     <Button
         android:id="@+id/button_search"

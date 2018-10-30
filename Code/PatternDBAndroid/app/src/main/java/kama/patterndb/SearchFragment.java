@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -20,6 +21,8 @@ public class SearchFragment extends Fragment {
     Button mBackButton;
     EditText mPatternNum;
     EditText mKeywords;
+    Spinner mCategory;
+    ArrayAdapter<String> adapter;
 
     DBHelper mydb;
 
@@ -54,11 +57,16 @@ public class SearchFragment extends Fragment {
 
         mKeywords = (EditText) v.findViewById(R.id.text_keyword);
 
+        /*mCategory = v.findViewById(R.id.spinner_category);
+        adapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.simple_spinner_item, mydb.getAllCategories());
+        mCategory.setAdapter(adapter);
+*/
         mSearchButton = (Button) v.findViewById(R.id.button_search);
         mSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //TODO need to enact query DB for pattern number and/or keywords and/or category/s and/or brand/s
+                //TODO need to make PatternListFragment.java & custom listItem for patterns
                 int[] brands = {1}; //get from the select list
                 int[] categories = {1,2}; // get from the select list
                 //get keywords from that field

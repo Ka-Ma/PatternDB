@@ -317,11 +317,11 @@ public class AddFragment extends Fragment {
         @Override
         public void onClick(View v) {
             String patternNum = mPatternNum.getText().toString();
-            int brandID;
-            String size;
+            int brandID = (int) mBrand.getSelectedItemId();
+            String size = mSizeRange.getText().toString();
             int[] category;
-            String description;
-            String cover = "location of cover image";
+            String description = mDescription.getText().toString();
+            String cover = "location of cover image"; //TODO once the image saving problem is resolved need to work on this
             String back = "location of back image";
 
             //there are some/most elements that need to be complete before the pattern can be saved.
@@ -331,7 +331,7 @@ public class AddFragment extends Fragment {
                 //String num, int brand, String sizeRange, int[] category, String description, String coverImg, String backImg
                 category = new int[] {1,2}; //TODO get list of category ids
                 //TODO get and set the various variables to pass to the pattern
-                Pattern pattern = new Pattern(patternNum, 1, "Size", category, "description", "directory for cover image", "directory for back image");
+                Pattern pattern = new Pattern(patternNum, brandID, size, category, description, "directory for cover image", "directory for back image");
                 int id = mydb.insertPattern(pattern);
                 Toast.makeText(v.getContext(), "pattern "+id+" saved", Toast.LENGTH_SHORT).show();
                 //TODO clear or refresh the add screen to empty fields
