@@ -47,7 +47,7 @@ public class EditListMenuFragment extends Fragment {
         mydb = new DBHelper(getActivity());
         View v = getActivity().findViewById(R.id.fragment_container);
 
-        mBrandButton = (Button) v.findViewById(R.id.button_brand);
+        mBrandButton = v.findViewById(R.id.button_brand);
         mBrandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -62,7 +62,7 @@ public class EditListMenuFragment extends Fragment {
             }
         });
 
-        mCategoryButton = (Button) v.findViewById(R.id.button_category);
+        mCategoryButton = v.findViewById(R.id.button_category);
         mCategoryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,7 +75,7 @@ public class EditListMenuFragment extends Fragment {
             }
         });
 
-        mBackButton = (Button) v.findViewById(R.id.button_back);
+        mBackButton = v.findViewById(R.id.button_back);
         mBackButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

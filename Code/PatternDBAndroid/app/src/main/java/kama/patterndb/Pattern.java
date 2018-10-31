@@ -1,10 +1,13 @@
 package kama.patterndb;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by Kat on 2/08/2018.
  */
 
-public class Pattern {
+public class Pattern implements Parcelable{
     private int mUID;
     private String mNum;
     private int mBrand;
@@ -97,4 +100,51 @@ public class Pattern {
         mBackImageLocn = locn;
     }
 
+
+    //Parcel Stuff
+    public Pattern(Parcel in){
+        this.mUID = in.readInt();
+        this.mNum = in.readString();
+        this.mBrand = in.readInt();
+        this.mSizeRange = in.readString();
+        this.mCategory = in.createIntArray();
+        this.mDescription = in.readString();
+        this.mCoverImageLocn = in.readString();
+        this.mBackImageLocn = in.readString();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(this.mUID);
+        dest.writeString(this.mNum);
+        dest.writeInt(this.mBrand);
+        dest.writeString(this.mSizeRange);
+        dest.writeIntArray(this.mCategory);
+        dest.writeString(this.mDescription);
+        dest.writeString(this.mCoverImageLocn);
+        dest.writeString(this.mBackImageLocn);
+    }
+
+    /*public static Parcelable.Creator<Pattern> getCreator(){
+        return CREATOR;
+    }
+
+    public static void setCreator(Creator<Pattern> creator){
+        CREATOR = creator;
+    }
+*/
+    public static Parcelable.Creator CREATOR = new Parcelable.Creator<Pattern>() {
+        public Pattern createFromParcel(Parcel in){
+            return new Pattern(in);
+        }
+
+        public Pattern[] newArray(int size){
+            return new Pattern[size];
+        }
+    };
 }

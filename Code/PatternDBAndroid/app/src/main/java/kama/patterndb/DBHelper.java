@@ -192,9 +192,9 @@ public class DBHelper extends SQLiteOpenHelper {
                 }while(categories.moveToNext());
             }
 
-            for(int i = 0; i< compareToThisUpdated.length; i++){
+            for(int cat : compareToThisUpdated){
                 //if this category is already there, fine
-                int thisCat = compareToThisUpdated[i];
+                int thisCat = cat;
 
                 categories.moveToFirst();
                 do {

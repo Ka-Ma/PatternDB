@@ -353,21 +353,31 @@ public class AddFragment extends Fragment {
 
         if(resultCode == RESULT_OK){
             Log.d(TAG, "image captured");
+            Bitmap imageBitmap;
 
-            if(requestCode == CAMERA_REQUEST_BACK){
-                Log.d(TAG, "the codes for back are good");
-                Bitmap imageBitmap = BitmapFactory.decodeFile(mBackImageFileName);
-                mBackImage.setImageBitmap(imageBitmap);
+            switch(requestCode){
+                case CAMERA_REQUEST_BACK:
+                    Log.d(TAG, "the codes for back are good");
+                    imageBitmap = BitmapFactory.decodeFile(mBackImageFileName);
+                    mBackImage.setImageBitmap(imageBitmap);
+                    break;
 
-            }else if (requestCode == CAMERA_REQUEST_FRONT){
-                Log.d(TAG, "the codes for front are good");
-                resizeCoverImage();
-                Bitmap imageBitmap = BitmapFactory.decodeFile(mCoverImageFileName);
-                mCoverImage.setImageBitmap(imageBitmap);
-                
-                Log.d(TAG, "uri is "+ mCoverImageUri.toString());
-            }else if (requestCode == CROP_REQUEST_COVER){
-                Log.d(TAG, "the crop happened i guess");
+                case CAMERA_REQUEST_FRONT:
+                    Log.d(TAG, "the codes for front are good");
+                    resizeCoverImage();
+                    imageBitmap = BitmapFactory.decodeFile(mCoverImageFileName);
+                    mCoverImage.setImageBitmap(imageBitmap);
+
+                    Log.d(TAG, "uri is "+ mCoverImageUri.toString());
+                    break;
+                case CROP_REQUEST_COVER:
+                    Log.d(TAG, "the crop happened i guess");
+                    break;
+
+                default:
+                    Log.d(TAG, "something unrecognised ");
+                    break;
+
             }
         }
     }

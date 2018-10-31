@@ -14,6 +14,9 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SearchFragment extends Fragment {
 
     //members
@@ -53,29 +56,53 @@ public class SearchFragment extends Fragment {
         mydb = new DBHelper(getActivity());
         View v = getActivity().findViewById(R.id.fragment_container);
 
-        mPatternNum = (EditText) v.findViewById(R.id.text_patternNumber);
+        //TODO need to add the multiselectors for brand and category
 
-        mKeywords = (EditText) v.findViewById(R.id.text_keyword);
+        mPatternNum = v.findViewById(R.id.text_patternNumber); //TODO add a thing to deactivate the other option if this is complete
+
+        mKeywords = v.findViewById(R.id.text_keyword);
 
         /*mCategory = v.findViewById(R.id.spinner_category);
         adapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.simple_spinner_item, mydb.getAllCategories());
         mCategory.setAdapter(adapter);
 */
-        mSearchButton = (Button) v.findViewById(R.id.button_search);
+        mSearchButton = v.findViewById(R.id.button_search);
         mSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO need to enact query DB for pattern number and/or keywords and/or category/s and/or brand/s
-                //TODO need to make PatternListFragment.java & custom listItem for patterns
-                int[] brands = {1}; //get from the select list
-                int[] categories = {1,2}; // get from the select list
-                //get keywords from that field
-                mydb.getPatternsMatching("keywords", brands, categories);
-                Toast.makeText(v.getContext(), "I will search for something", Toast.LENGTH_SHORT).show();
+                ArrayList<Pattern> patternList = null;
+
+                Log.d("myApp", "pattern num '" + mPatternNum.getText().toString()+"'");
+                Log.d("myApp", "keywords '" + mKeywords.getText().toString()+"'");
+
+                //if pattern num is not null
+                if(!mPatternNum.getText().toString().equals("")){
+                    patternList = (ArrayList) mydb.getPatternByPatternNum(mPatternNum.getText().toString());
+                }else if(!mKeywords.getText().toString().equals("")){
+                    String keywords = mKeywords.getText().toString();
+                    int[] brands = null; //TODO get from the select list, may be null
+                    int[] categories = null; // TODO get from the select list, may be null
+
+                    patternList = (ArrayList) mydb.getPatternsMatching(keywords, brands, categories);
+                }else{
+                    patternList = (ArrayList) mydb.getPatternsMatching("", null, null);
+                }
+
+
+                //search button needs to launch new fragment
+                if(patternList != null) {
+                    PatternListFragment patternListFragment = PatternListFragment.newInstance(patternList);
+                    android.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+                    ft.replace(R.id.fragment_container, patternListFragment);
+                    ft.addToBackStack(null);
+                    ft.setTransition(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                    ft.commit();
+                }
+
             }
         });
 
-        mBackButton = (Button) v.findViewById(R.id.button_back);
+        mBackButton = v.findViewById(R.id.button_back);
         mBackButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
