@@ -1,13 +1,9 @@
 package kama.patterndb;
 
-import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.effect.EffectContext;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,7 +11,6 @@ import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,10 +21,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
-import android.media.effect.Effect;
-import android.media.effect.EffectFactory;
-
-import com.isseiaoki.simplecropview.CropImageView;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +36,7 @@ import static java.lang.Boolean.TRUE;
  * Created by Kat on 2/08/2018.
  */
 
-public class AddFragment extends Fragment {
+public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow for editing the pattern, add delete button, make sure proper buttons are enabled at the right time
     //logging purposes
     private static final String TAG = "myApp";
 
@@ -68,6 +59,7 @@ public class AddFragment extends Fragment {
 
     //other stuff
     DBHelper mydb;
+    private static Boolean mEditing = false;
 
     //intent request codes
     private static final int CAMERA_REQUEST_BACK = 1;
@@ -80,13 +72,20 @@ public class AddFragment extends Fragment {
     private String mBackImageFileName;
 
 
-    public static AddFragment newInstance(){
-        AddFragment f = new AddFragment();
+    public static AddEditPatternFragment newInstance(){
+        AddEditPatternFragment f = new AddEditPatternFragment();
+
+        return f;
+    }
+
+    public static AddEditPatternFragment newInstance(Pattern p){ //TODO check this overloading didn't break it in the long run
+        AddEditPatternFragment f = new AddEditPatternFragment();
 
         //any args in Bundle
-        //Bundle args = new Bundle();
-        //args.putInt("index", 0);
-        //f.setArguments(args);
+        Bundle args = new Bundle();
+        args.putParcelable("pattern", p);
+        f.setArguments(args);
+        mEditing = true;
 
         return f;
     }
@@ -114,6 +113,7 @@ public class AddFragment extends Fragment {
         setDependents(FALSE);
         setListeners();
         loadData();
+        //TODO ***THIS IS NEXT add a bit to populate the fields if there is a not null pattern in the args
     }
 
     @Override

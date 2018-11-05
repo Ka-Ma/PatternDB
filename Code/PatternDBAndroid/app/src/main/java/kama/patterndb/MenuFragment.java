@@ -45,7 +45,7 @@ public class MenuFragment extends Fragment {
             public void onClick(View v) {
                 // display on the same Activity
 
-                AddFragment add = AddFragment.newInstance();
+                AddEditPatternFragment add = AddEditPatternFragment.newInstance();
 
                 FragmentTransaction ft =  getFragmentManager().beginTransaction();
                 ft.replace(R.id.fragment_container, add);

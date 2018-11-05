@@ -1,7 +1,9 @@
 package kama.patterndb;
 
+import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,6 +58,15 @@ public class PatternListFragment extends ListFragment implements OnItemClickList
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position,long id) {
         Toast.makeText(getActivity(), "Item: " + position, Toast.LENGTH_SHORT).show();
-        //TODO open edit/delete pattern fragment
+        Log.d("myApp", "position = " + position + ", id = " + id);
+        Log.d("myApp", "somethign meaningful? " + parent.getItemAtPosition(position)); //it's a pattern! yay
+
+        AddEditPatternFragment edit = AddEditPatternFragment.newInstance((Pattern)parent.getItemAtPosition(position));
+
+        FragmentTransaction ft =  getFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container, edit);
+        ft.addToBackStack(null);
+        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        ft.commit();
     }
 }
