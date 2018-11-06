@@ -21,6 +21,7 @@ public class PatternListFragment extends ListFragment implements OnItemClickList
 
     View v;
 
+    //TODO need to have this fragment update list on return from edit or delete
 
     public static PatternListFragment newInstance(ArrayList<Pattern> list){
         PatternListFragment f = new PatternListFragment();
@@ -69,4 +70,10 @@ public class PatternListFragment extends ListFragment implements OnItemClickList
         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
         ft.commit();
     }
+
+    /*@Override
+    public void onResume() {
+        super.onResume();
+        adapter.notifyDataSetChanged();
+    }*/ //FIXME seems to crash it. must have broken it else where, still crashes with this commented out
 }

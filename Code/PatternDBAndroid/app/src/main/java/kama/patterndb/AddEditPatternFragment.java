@@ -46,6 +46,7 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
     //layout members
     Button mSaveButton;
     Button mBackButton;
+    Button mDeleteButton;
     Button mOCRButton;
     Button mBackImageButton;
     Button mCoverImageButton;
@@ -103,17 +104,23 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-
         bindMembers();
 
         //for testing purposes:
         mydb.insertBrand("TestB1");
         mydb.insertCategory("TestC1");
 
-        setDependents(FALSE);
         setListeners();
         loadData();
-        //TODO ***THIS IS NEXT add a bit to populate the fields if there is a not null pattern in the args
+
+        setDependents(mEditing);  //This disables or enables subsequent fields dependent on the Pattern Number field being complete
+
+        if(mEditing){
+            Pattern p = getArguments().getParcelable("pattern");
+            if(p.getUID() != -1){
+                populateFields(p);
+            }
+        }
     }
 
     @Override
@@ -154,6 +161,7 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
         mOCRButton = v.findViewById(R.id.button_ocr);
         mSaveButton = v.findViewById(R.id.button_save);
         mBackButton = v.findViewById(R.id.button_back);
+        mDeleteButton = v.findViewById(R.id.button_delete);
     }
 
     private void setDependents(boolean state) {
@@ -177,6 +185,7 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
         mOCRButton.setOnClickListener(ocrAction);
         mSaveButton.setOnClickListener(clickSave);
         mBackButton.setOnClickListener(clickBack);
+        mDeleteButton.setOnClickListener(clickDelete);
     }
 
     private void loadData() {
@@ -191,6 +200,16 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
 
         mBrand.setAdapter(brandAdapter);
         mCategory.setAdapter(categoryAdapter);
+    }
+
+    private void populateFields(Pattern p){
+        mPatternNum.setText(p.getNum());
+        mBrand.setSelection(p.getBrand());
+        mDescription.setText(p.getDescription());
+        mSizeRange.setText(p.getSizeRange());
+        //mCategory.setSelection(p.getCategory()); //TODO set multiple selection
+        //mBackImage; //TODO once images are sorted out, need to populate field
+        //mCoverImage;
     }
 
     private final TextWatcher patternNumWatcher = new TextWatcher() {
@@ -315,7 +334,8 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
 
     private View.OnClickListener clickSave = new View.OnClickListener() {
         @Override
-        public void onClick(View v) {
+        public void onClick(View v) { //TODO need to make it update instead of insert when editing
+            Boolean carryOn = false;
             String patternNum = mPatternNum.getText().toString();
             int brandID = (int) mBrand.getSelectedItemId();
             String size = mSizeRange.getText().toString();
@@ -323,17 +343,31 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
             String description = mDescription.getText().toString();
             String cover = "location of cover image"; //TODO once the image saving problem is resolved need to work on this
             String back = "location of back image";
+            Pattern pattern = null;
 
             //there are some/most elements that need to be complete before the pattern can be saved.
             if(patternNum.equals("")){
                 Toast.makeText(v.getContext(),"Please enter a pattern number", Toast.LENGTH_SHORT).show();
+
             }else{
-                //String num, int brand, String sizeRange, int[] category, String description, String coverImg, String backImg
+                carryOn = true;
+
                 category = new int[] {1,2}; //TODO get list of category ids
                 //TODO get and set the various variables to pass to the pattern
-                Pattern pattern = new Pattern(patternNum, brandID, size, category, description, "directory for cover image", "directory for back image");
+                //String num, int brand, String sizeRange, int[] category, String description, String coverImg, String backImg
+                pattern = new Pattern(patternNum, brandID, size, category, description, "directory for cover image", "directory for back image");
+
+            }
+
+
+
+            if (mEditing && carryOn){
+                mydb.updatePattern(pattern);
+                Toast.makeText(v.getContext(),"Updated " + pattern.getNum(), Toast.LENGTH_SHORT).show();
+                getFragmentManager().popBackStack();
+            }else if (carryOn){
                 int id = mydb.insertPattern(pattern);
-                Toast.makeText(v.getContext(), "pattern "+id+" saved", Toast.LENGTH_SHORT).show();
+                Toast.makeText(v.getContext(), "pattern "+pattern.getNum()+" saved as "+ id, Toast.LENGTH_SHORT).show();
                 //TODO clear or refresh the add screen to empty fields
             }
         }
@@ -342,6 +376,19 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
     private View.OnClickListener clickBack = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            getFragmentManager().popBackStack();
+        }
+    };
+
+    private View.OnClickListener clickDelete = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            String name = mPatternNum.getText().toString();
+            Pattern p = getArguments().getParcelable("pattern");
+            int id = p.getUID();
+            mydb.deletePattern(id);
+            Toast.makeText(v.getContext(), "pattern "+name+" deleted", Toast.LENGTH_SHORT).show();
+
             getFragmentManager().popBackStack();
         }
     };
