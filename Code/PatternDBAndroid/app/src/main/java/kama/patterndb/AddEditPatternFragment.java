@@ -189,8 +189,8 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
     }
 
     private void loadData() {
-        List<String> brands = mydb.getAllBrands();
-        List<String> categories = mydb.getAllCategories();
+        List<String> brands = mydb.getAllBrandsNames();
+        List<String> categories = mydb.getAllCategoriesNames();
 
         ArrayAdapter<String> brandAdapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.simple_spinner_dropdown_item, brands);
         ArrayAdapter<String> categoryAdapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.simple_spinner_dropdown_item, categories);
@@ -207,7 +207,7 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
         mBrand.setSelection(p.getBrand());
         mDescription.setText(p.getDescription());
         mSizeRange.setText(p.getSizeRange());
-        //mCategory.setSelection(p.getCategory()); //TODO set multiple selection
+        //mCategory.setSelection(p.getCategory()); //TODO THIS ONE NEXT set multiple selection
         //mBackImage; //TODO once images are sorted out, need to populate field
         //mCoverImage;
     }

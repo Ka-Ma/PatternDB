@@ -678,7 +678,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //get list of brands
-    public List<String> getAllBrands(){
+    public List<String> getAllBrandsNames(){
         List<String> brands = new ArrayList<String>();
 
         String selectQuery = "SELECT * FROM " + BRAND_TABLE_NAME;
@@ -689,6 +689,30 @@ public class DBHelper extends SQLiteOpenHelper {
         if(cursor.moveToFirst()){
             do{
                 brands.add(cursor.getString(cursor.getColumnIndex(BRAND_COLUMN_BRAND)));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return brands;
+    }
+
+    //get list of brands and uid
+    public ArrayList<ListItem> getAllBrandsDetails(){
+        ArrayList<ListItem> brands = new ArrayList<ListItem>();
+
+        String selectQuery = "SELECT * FROM " + BRAND_TABLE_NAME;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if(cursor.moveToFirst()){
+            do{
+                ListItem temp = new ListItem();
+                temp.setUID(cursor.getInt(cursor.getColumnIndex(BRAND_COLUMN_BRANDID)));
+                temp.setItem(cursor.getString(cursor.getColumnIndex(BRAND_COLUMN_BRAND)));
+                brands.add(temp);
             } while (cursor.moveToNext());
         }
 
@@ -778,7 +802,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //get list of categories
-    public List<String> getAllCategories(){
+    public List<String> getAllCategoriesNames(){
         List<String> categories = new ArrayList<String>();
 
         String selectQuery = "SELECT * FROM " + CATEGORY_TABLE_NAME;
@@ -789,6 +813,31 @@ public class DBHelper extends SQLiteOpenHelper {
         if(cursor.moveToFirst()){
             do{
                 categories.add(cursor.getString(1));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return categories;
+    }
+
+    //get list of categories different return type
+    public ArrayList<ListItem> getAllCategoriesDetails(){
+        ArrayList<ListItem> categories = new ArrayList<ListItem>();
+
+        String selectQuery = "SELECT * FROM " + CATEGORY_TABLE_NAME;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if(cursor.moveToFirst()){
+            do{
+                ListItem temp = new ListItem();
+                temp.setUID(cursor.getInt(cursor.getColumnIndex(CATEGORY_COLUMN_CATEGORYID)));
+                temp.setItem(cursor.getString(cursor.getColumnIndex(CATEGORY_COLUMN_CATEGORY)));
+
+                categories.add(temp);
             } while (cursor.moveToNext());
         }
 

@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- //TODO this needs a delete button & update button so the list can be managed -->
     <ListView android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

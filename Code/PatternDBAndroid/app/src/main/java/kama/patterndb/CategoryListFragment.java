@@ -9,14 +9,19 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CategoryListFragment extends ListFragment implements OnItemClickListener {
     DBHelper mydb;
 
-    Button mAdd; //TODO need to be able to edit list
+    View v;
+
+    EditText mNewItem;
+    Button mAdd;
 
     public static CategoryListFragment newInstance(){
         CategoryListFragment f = new CategoryListFragment();
@@ -33,7 +38,7 @@ public class CategoryListFragment extends ListFragment implements OnItemClickLis
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View v = inflater.inflate(R.layout.edit_list, null);
+        v = inflater.inflate(R.layout.edit_list, null);
 
         return v;
     }
@@ -44,17 +49,40 @@ public class CategoryListFragment extends ListFragment implements OnItemClickLis
 
         mydb = new DBHelper(getActivity());
 
-        List<String> categories = mydb.getAllCategories();
-        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, categories);  //TODO need to make customer adapter for category
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        setList();
 
-        setListAdapter(categoryAdapter);
-        getListView().setOnItemClickListener(this);
+        mNewItem = v.findViewById(R.id.edit_list_newItem);
+
+        mAdd = v.findViewById(R.id.edit_list_addButton);
+        mAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(), "new cat is "+ mNewItem.getText().toString(), Toast.LENGTH_SHORT).show();
+                mydb.insertCategory(mNewItem.getText().toString());
+                mNewItem.setText("");
+
+                setList();
+            }
+        });
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position,long id) {
-        Toast.makeText(getActivity(), "Item: " + position, Toast.LENGTH_SHORT).show();
-        //TODO what if anything do i want this to do?
+        //This is managed by adapter
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        setList();
+
+    }
+
+    private void setList(){
+        ArrayList<ListItem> categories = mydb.getAllCategoriesDetails();
+
+        CategoryListAdapter categoryAdapter = new CategoryListAdapter(getActivity(), R.layout.listview_item_row_cat_or_brand_lists, categories);
+        setListAdapter(categoryAdapter);
     }
 }
