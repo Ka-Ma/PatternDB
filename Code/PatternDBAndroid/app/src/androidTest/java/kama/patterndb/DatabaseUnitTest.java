@@ -88,6 +88,14 @@ public class DatabaseUnitTest {
     }
 
     @Test
+    public void retrieveBrandNameFromID(){
+        int thisOne = mydb.insertBrand("youSUCKI!");
+        String result = mydb.getBrand(thisOne);
+
+        assertEquals("youSUCKI!", result);
+    }
+
+    @Test
     public void getAllBrands(){
         List<String> results = mydb.getAllBrands();
 

@@ -56,7 +56,7 @@ public class SearchFragment extends Fragment {
         mydb = new DBHelper(getActivity());
         View v = getActivity().findViewById(R.id.fragment_container);
 
-        //TODO need to add the multiselectors for brand and category
+        //TODO THIS ONE NEXT need to add the multiselectors for brand and category
 
         mPatternNum = v.findViewById(R.id.text_patternNumber); //TODO add a thing to deactivate the other option if this is complete
 
@@ -70,35 +70,22 @@ public class SearchFragment extends Fragment {
         mSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ArrayList<Pattern> patternList = null;
+                //need array of search criteria
+                //String, string, string, string
+                //pattern number, keywords, brands, categories
+                ArrayList<String> searchCriteria = new ArrayList<String>();
 
-                Log.d("myApp", "pattern num '" + mPatternNum.getText().toString()+"'");
-                Log.d("myApp", "keywords '" + mKeywords.getText().toString()+"'");
-
-                //if pattern num is not null
-                if(!mPatternNum.getText().toString().equals("")){
-                    patternList = (ArrayList) mydb.getPatternByPatternNum(mPatternNum.getText().toString());
-                }else if(!mKeywords.getText().toString().equals("")){
-                    String keywords = mKeywords.getText().toString();
-                    int[] brands = null; //TODO get from the select list, may be null
-                    int[] categories = null; // TODO get from the select list, may be null
-
-                    patternList = (ArrayList) mydb.getPatternsMatching(keywords, brands, categories);
-                }else{
-                    patternList = (ArrayList) mydb.getPatternsMatching("", null, null);
-                }
-
+                searchCriteria.add(mPatternNum.getText().toString());
+                searchCriteria.add(mKeywords.getText().toString());
+                //TODO add brands and categories to searchCritera
 
                 //search button needs to launch new fragment
-                if(patternList != null) {
-                    PatternListFragment patternListFragment = PatternListFragment.newInstance(patternList);
-                    android.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
-                    ft.replace(R.id.fragment_container, patternListFragment);
-                    ft.addToBackStack(null);
-                    ft.setTransition(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-                    ft.commit();
-                }
-
+                PatternListFragment patternListFragment = PatternListFragment.newInstance(searchCriteria);
+                android.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+                ft.replace(R.id.fragment_container, patternListFragment);
+                ft.addToBackStack(null);
+                ft.setTransition(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                ft.commit();
             }
         });
 

@@ -45,7 +45,7 @@ public class CategoryListFragment extends ListFragment implements OnItemClickLis
         mydb = new DBHelper(getActivity());
 
         List<String> categories = mydb.getAllCategories();
-        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, categories);
+        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, categories);  //TODO need to make customer adapter for category
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         setListAdapter(categoryAdapter);

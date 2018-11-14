@@ -601,7 +601,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //new brand
-    public void insertBrand(String brand){
+    public int insertBrand(String brand){
         SQLiteDatabase db = this.getWritableDatabase();
 
         //prepare row to insert
@@ -610,7 +610,7 @@ public class DBHelper extends SQLiteOpenHelper {
         contentValues.put(BRAND_COLUMN_BRAND, brand);
 
         //insert row
-        db.insert(BRAND_TABLE_NAME, null, contentValues);
+        return (int) db.insert(BRAND_TABLE_NAME, null, contentValues);
     }
 
     //update brand
@@ -648,15 +648,19 @@ public class DBHelper extends SQLiteOpenHelper {
 
     //get brand by id
     public String getBrand(int id){
+        String foundBrand = "";
+
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String selectQuery = "SELECT * FROM " + BRAND_TABLE_NAME + " WHERE " + BRAND_COLUMN_BRANDID + "=" + id;
+        String selectQuery = "SELECT * FROM " + BRAND_TABLE_NAME + " WHERE " + BRAND_COLUMN_BRANDID + "= ?";
 
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        Cursor cursor = db.rawQuery(selectQuery, new String[] {Integer.toString(id)});
 
-        cursor.moveToFirst();
+        if(cursor.moveToFirst()){
+            foundBrand = cursor.getString(cursor.getColumnIndex(BRAND_COLUMN_BRAND));
+        }
 
-        return cursor.getString(cursor.getColumnIndex(BRAND_COLUMN_BRAND));
+        return foundBrand;
     }
 
     //get brand by name
@@ -684,7 +688,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         if(cursor.moveToFirst()){
             do{
-                brands.add(cursor.getString(1));
+                brands.add(cursor.getString(cursor.getColumnIndex(BRAND_COLUMN_BRAND)));
             } while (cursor.moveToNext());
         }
 

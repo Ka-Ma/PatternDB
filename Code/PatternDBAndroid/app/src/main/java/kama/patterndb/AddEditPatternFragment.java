@@ -212,6 +212,16 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
         //mCoverImage;
     }
 
+    private void clearFields(){
+        mPatternNum.setText("");
+        mBrand.setSelection(0);
+        mDescription.setText("");
+        mSizeRange.setText("");
+        mCategory.setSelection(0);
+        //mBackImage; //TODO once images are sorted out, need to clear field
+        //mCoverImage;
+    }
+
     private final TextWatcher patternNumWatcher = new TextWatcher() {
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -334,7 +344,7 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
 
     private View.OnClickListener clickSave = new View.OnClickListener() {
         @Override
-        public void onClick(View v) { //TODO need to make it update instead of insert when editing
+        public void onClick(View v) {
             Boolean carryOn = false;
             String patternNum = mPatternNum.getText().toString();
             int brandID = (int) mBrand.getSelectedItemId();
@@ -356,19 +366,21 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
                 //TODO get and set the various variables to pass to the pattern
                 //String num, int brand, String sizeRange, int[] category, String description, String coverImg, String backImg
                 pattern = new Pattern(patternNum, brandID, size, category, description, "directory for cover image", "directory for back image");
-
             }
 
-
-
             if (mEditing && carryOn){
+                Pattern p = getArguments().getParcelable("pattern");
+                pattern.setUID(p.getUID());
+
                 mydb.updatePattern(pattern);
+
                 Toast.makeText(v.getContext(),"Updated " + pattern.getNum(), Toast.LENGTH_SHORT).show();
+
                 getFragmentManager().popBackStack();
             }else if (carryOn){
                 int id = mydb.insertPattern(pattern);
                 Toast.makeText(v.getContext(), "pattern "+pattern.getNum()+" saved as "+ id, Toast.LENGTH_SHORT).show();
-                //TODO clear or refresh the add screen to empty fields
+                clearFields();
             }
         }
     };

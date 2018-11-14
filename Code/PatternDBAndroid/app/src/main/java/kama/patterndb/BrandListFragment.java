@@ -81,7 +81,9 @@ public class BrandListFragment extends ListFragment implements OnItemClickListen
     private View.OnClickListener clickDelete = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            //TODO delete selected item
             Toast.makeText(v.getContext(), "Deleted a Brand", Toast.LENGTH_SHORT).show();
+            //TODO update list
         }
     };
 }

@@ -23,12 +23,12 @@ public class PatternListFragment extends ListFragment implements OnItemClickList
 
     //TODO need to have this fragment update list on return from edit or delete
 
-    public static PatternListFragment newInstance(ArrayList<Pattern> list){
+    public static PatternListFragment newInstance(ArrayList<String> searchCriteria){ //TODO I think i need to update this to send the search criteria
         PatternListFragment f = new PatternListFragment();
 
         //any args in Bundle
         Bundle args = new Bundle();
-        args.putParcelableArrayList("list", list);
+        args.putStringArrayList("criteria", searchCriteria);
         f.setArguments(args);
 
         return f;
@@ -44,15 +44,22 @@ public class PatternListFragment extends ListFragment implements OnItemClickList
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        //update the list
+        setList();
+
+    }
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
         mydb = new DBHelper(getActivity());
 
-        List<Pattern> patternList = getArguments().getParcelableArrayList("list");
-        PatternAdapter adapter = new PatternAdapter(v.getContext(), R.layout.listview_item_row_pattern, patternList);
+        setList();
 
-        setListAdapter(adapter);
         getListView().setOnItemClickListener(this);
     }
 
@@ -71,9 +78,26 @@ public class PatternListFragment extends ListFragment implements OnItemClickList
         ft.commit();
     }
 
-    /*@Override
-    public void onResume() {
-        super.onResume();
-        adapter.notifyDataSetChanged();
-    }*/ //FIXME seems to crash it. must have broken it else where, still crashes with this commented out
+    public void setList(){
+        ArrayList<String> searchCriteria = getArguments().getStringArrayList("criteria");
+
+        ArrayList<Pattern> patternList = null;
+
+        //if pattern num is not null
+        if(!searchCriteria.get(0).equals("")){
+            patternList = (ArrayList) mydb.getPatternByPatternNum(searchCriteria.get(0));
+        }else if(!searchCriteria.get(1).equals("")){
+            String keywords = searchCriteria.get(1);
+            int[] brands = null; //TODO get from the select list, may be null
+            int[] categories = null; // TODO get from the select list, may be null
+
+            patternList = (ArrayList) mydb.getPatternsMatching(keywords, brands, categories);
+        }else{
+            patternList = (ArrayList) mydb.getPatternsMatching("", null, null);
+        }
+
+        PatternAdapter adapter = new PatternAdapter(v.getContext(), R.layout.listview_item_row_pattern, patternList);
+
+        setListAdapter(adapter);
+    }
 }

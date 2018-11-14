@@ -44,9 +44,7 @@ public class Pattern implements Parcelable{
         return mNum;
     }
 
-    public int getBrand(){
-        return mBrand;
-    }
+    public int getBrand(){ return mBrand; }
 
     public String getSizeRange(){
         return mSizeRange;
