@@ -15,14 +15,14 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class BrandListAdapter extends BaseAdapter implements ListAdapter {
+public class EditCategoryListAdapter extends BaseAdapter implements ListAdapter {
     private ArrayList<ListItem> list;
     private Context context;
     private int mLayoutResourceId;
 
     DBHelper mydb;
 
-    public BrandListAdapter(Context context, int layoutResourceId, ArrayList<ListItem> list){
+    public EditCategoryListAdapter(Context context, int layoutResourceId, ArrayList<ListItem> list){
         this.list = list;
         this.context = context;
         this.mLayoutResourceId = layoutResourceId;
@@ -65,8 +65,8 @@ public class BrandListAdapter extends BaseAdapter implements ListAdapter {
             @Override
             public void onClick(View v) {
                 Toast.makeText(context, "deleting " + getItem(position).getItem(), Toast.LENGTH_SHORT).show();
-                mydb.deleteBrand(getItem(position).getUID());
-                notifyDataSetChanged();
+                mydb.deleteCategory(getItem(position).getUID());
+                notifyDataSetChanged(); //FIXME this does not update the list
             }
         });
 
@@ -75,7 +75,7 @@ public class BrandListAdapter extends BaseAdapter implements ListAdapter {
             public void onClick(final View v) {
                 //opening dialog to edit
                 AlertDialog.Builder updateDialog = new AlertDialog.Builder(v.getContext());
-                updateDialog.setTitle("Update Brand");
+                updateDialog.setTitle("Update Category");
                 final EditText input = new EditText(v.getContext());
                 input.setText(getItem(position).getItem());
                 updateDialog.setView(input);
@@ -83,7 +83,7 @@ public class BrandListAdapter extends BaseAdapter implements ListAdapter {
                 updateDialog.setPositiveButton("Update", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mydb.updateBrand(getItem(position).getUID(), input.getText().toString());
+                        mydb.updateCategory(getItem(position).getUID(), input.getText().toString());
                     }
                 });
 

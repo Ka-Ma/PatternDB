@@ -54,6 +54,7 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
     Spinner mBrand;
     EditText mSizeRange;
     Spinner mCategory;
+    Button mCategoryDDL;
     EditText mDescription;
     ImageView mCoverImage;
     ImageView mBackImage;
@@ -79,7 +80,7 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
         return f;
     }
 
-    public static AddEditPatternFragment newInstance(Pattern p){ //TODO check this overloading didn't break it in the long run
+    public static AddEditPatternFragment newInstance(Pattern p){
         AddEditPatternFragment f = new AddEditPatternFragment();
 
         //any args in Bundle
@@ -105,11 +106,6 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
         super.onActivityCreated(savedInstanceState);
 
         bindMembers();
-
-        //for testing purposes:
-        mydb.insertBrand("TestB1");
-        mydb.insertCategory("TestC1");
-
         setListeners();
         loadData();
 
@@ -192,8 +188,8 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
         List<String> brands = mydb.getAllBrandsNames();
         List<String> categories = mydb.getAllCategoriesNames();
 
-        ArrayAdapter<String> brandAdapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.simple_spinner_dropdown_item, brands);
-        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.simple_spinner_dropdown_item, categories);
+        ArrayAdapter<String> brandAdapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.simple_spinner_dropdown_item, brands); //TODO need to make custom adapters for these to allow UID to transfer
+        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.simple_spinner_dropdown_item, categories);  //TODO need to make custom adapter to allow UID to transfer and multiple to be selected
 
         brandAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -347,7 +343,7 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
         public void onClick(View v) {
             Boolean carryOn = false;
             String patternNum = mPatternNum.getText().toString();
-            int brandID = (int) mBrand.getSelectedItemId();
+            int brandID = (int) mBrand.getSelectedItemId(); //FIXME this doesn't give the UID it gives me the place in the array which could be completely different need to make ANOTHER adapter
             String size = mSizeRange.getText().toString();
             int[] category;
             String description = mDescription.getText().toString();
@@ -480,6 +476,10 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
             e.apply(in, width, height, out); //need to do some more searching
             */
         }
+    }
+
+    private void settingUpDropDown(){
+        //mCategoryDDL
     }
 
 }

@@ -5,15 +5,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class CategoryListFragment extends ListFragment implements OnItemClickListener {
     DBHelper mydb;
@@ -62,6 +61,9 @@ public class CategoryListFragment extends ListFragment implements OnItemClickLis
                 mNewItem.setText("");
 
                 setList();
+
+                //FIXME trying to get the on screen keyboard to disappear once the user is done with it.
+                getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
             }
         });
     }
@@ -82,7 +84,7 @@ public class CategoryListFragment extends ListFragment implements OnItemClickLis
     private void setList(){
         ArrayList<ListItem> categories = mydb.getAllCategoriesDetails();
 
-        CategoryListAdapter categoryAdapter = new CategoryListAdapter(getActivity(), R.layout.listview_item_row_cat_or_brand_lists, categories);
+        EditCategoryListAdapter categoryAdapter = new EditCategoryListAdapter(getActivity(), R.layout.listview_item_row_cat_or_brand_lists, categories);
         setListAdapter(categoryAdapter);
     }
 }

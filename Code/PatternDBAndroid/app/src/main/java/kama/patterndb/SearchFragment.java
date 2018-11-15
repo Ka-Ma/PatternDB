@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -24,7 +25,7 @@ public class SearchFragment extends Fragment {
     Button mBackButton;
     EditText mPatternNum;
     EditText mKeywords;
-    Spinner mCategory;
+    CheckedTextView mCategory;
     ArrayAdapter<String> adapter;
 
     DBHelper mydb;
@@ -63,8 +64,11 @@ public class SearchFragment extends Fragment {
         mKeywords = v.findViewById(R.id.text_keyword);
 
         mCategory = v.findViewById(R.id.search_spinner_category);
-        adapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.select_dialog_multichoice , mydb.getAllCategoriesNames()); //FIXME unable to select more than one
-        mCategory.setAdapter(adapter);
+
+
+        adapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.select_dialog_multichoice, mydb.getAllCategoriesNames()); //FIXME unable to select more than one
+
+        //mCategory.setAdapter(adapter);
 
         mSearchButton = v.findViewById(R.id.button_search);
         mSearchButton.setOnClickListener(new View.OnClickListener() {

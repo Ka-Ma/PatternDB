@@ -82,7 +82,7 @@ public class DatabaseUnitTest {
         int count = mydb.numBrands() + 1;
         String bra = "testBrand";
         mydb.insertBrand(bra);
-        List<String> results = mydb.getAllBrands();
+        List<String> results = mydb.getAllBrandsNames();
         assertEquals(count, results.size());
         assertEquals(bra, results.get(results.size()-1));
     }
@@ -97,7 +97,7 @@ public class DatabaseUnitTest {
 
     @Test
     public void getAllBrands(){
-        List<String> results = mydb.getAllBrands();
+        List<String> results = mydb.getAllBrandsNames();
 
         List<String> expected = new ArrayList<String>();
         expected.add(brand1);
@@ -121,7 +121,7 @@ public class DatabaseUnitTest {
     public void deleteBrand(){
         int id = mydb.getBrand(brand1);
         mydb.deleteBrand(id);
-        List<String> results = mydb.getAllBrands();
+        List<String> results = mydb.getAllBrandsNames();
 
         List<String> expected = new ArrayList<String>();
         expected.add(brand2);
@@ -135,7 +135,7 @@ public class DatabaseUnitTest {
     public void addCategory() {
         String cat = "testCategory";
         mydb.insertCategory(cat);
-        List<String> results = mydb.getAllCategories();
+        List<String> results = mydb.getAllCategoriesNames();
         assertEquals(5, results.size());
         assertEquals(cat, results.get(results.size()-1));
     }
@@ -157,7 +157,7 @@ public class DatabaseUnitTest {
 
     @Test
     public void getAllCategories(){
-        List<String> results = mydb.getAllCategories();
+        List<String> results = mydb.getAllCategoriesNames();
 
         List<String> expected = new ArrayList<String>();
         expected.add(cat1);
@@ -182,7 +182,7 @@ public class DatabaseUnitTest {
     public void deleteCategory(){
         int id = mydb.getCategory("test1Category");
         mydb.deleteCategory(id);
-        List<String> results = mydb.getAllCategories();
+        List<String> results = mydb.getAllCategoriesNames();
 
         List<String> expected = new ArrayList<String>();
         expected.add(cat2);

@@ -34,6 +34,8 @@
             android:labelFor="@id/text_patternNumber"
             android:text="@string/lbl_patternNumber" />
 
+
+
         <Spinner
             android:id="@+id/spinner_brand"
             android:layout_width="218dp"
@@ -67,6 +69,21 @@
             android:labelFor="@id/text_size"
             android:text="@string/lbl_sizeRange"
             tools:layout_editor_absoluteX="3dp" />
+
+        <TextView
+            android:id="@+id/DropDownListSelectBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_row="3"/>
+
+        <Button
+            android:id="@+id/DropDownListCreate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_row="3"
+            />
 
         <Spinner
             android:id="@+id/spinner_category"
