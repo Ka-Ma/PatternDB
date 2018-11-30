@@ -80,7 +80,7 @@
             android:layout_gravity="top"
             />
 
-        <Spinner
+        <kama.patterndb.SelectMultiSpinner
             android:id="@+id/search_spinner_brand"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -99,14 +99,13 @@
             android:layout_gravity="top"
             />
 
-        <CheckedTextView
+        <kama.patterndb.SelectMultiSpinner
             android:id="@+id/search_spinner_category"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_column="1"
             android:layout_row="4"
             android:layout_gravity="top"
-            android:checkMark="?android:attr/listChoiceIndicatorMultiple"
             />
 
         <TextView

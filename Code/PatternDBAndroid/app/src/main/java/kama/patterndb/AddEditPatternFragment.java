@@ -53,8 +53,7 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
     EditText mPatternNum;
     Spinner mBrand;
     EditText mSizeRange;
-    Spinner mCategory;
-    Button mCategoryDDL;
+    SelectMultiSpinner mCategory;
     EditText mDescription;
     ImageView mCoverImage;
     ImageView mBackImage;
@@ -112,6 +111,7 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
         setDependents(mEditing);  //This disables or enables subsequent fields dependent on the Pattern Number field being complete
 
         if(mEditing){
+            mDeleteButton.setVisibility(View.VISIBLE);
             Pattern p = getArguments().getParcelable("pattern");
             if(p.getUID() != -1){
                 populateFields(p);
@@ -158,6 +158,7 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
         mSaveButton = v.findViewById(R.id.button_save);
         mBackButton = v.findViewById(R.id.button_back);
         mDeleteButton = v.findViewById(R.id.button_delete);
+        mDeleteButton.setVisibility(View.INVISIBLE);
     }
 
     private void setDependents(boolean state) {
@@ -188,14 +189,16 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
         List<String> brands = mydb.getAllBrandsNames();
         List<String> categories = mydb.getAllCategoriesNames();
 
+        mCategory.setItems(categories);
+
         ArrayAdapter<String> brandAdapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.simple_spinner_dropdown_item, brands); //TODO need to make custom adapters for these to allow UID to transfer
-        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.simple_spinner_dropdown_item, categories);  //TODO need to make custom adapter to allow UID to transfer and multiple to be selected
+        //ArrayAdapter<String> categoryAdapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.simple_spinner_dropdown_item, categories);  //TODO need to make custom adapter to allow UID to transfer and multiple to be selected
 
         brandAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         mBrand.setAdapter(brandAdapter);
-        mCategory.setAdapter(categoryAdapter);
+        //mCategory.setAdapter(categoryAdapter);
     }
 
     private void populateFields(Pattern p){
@@ -345,7 +348,9 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
             String patternNum = mPatternNum.getText().toString();
             int brandID = (int) mBrand.getSelectedItemId(); //FIXME this doesn't give the UID it gives me the place in the array which could be completely different need to make ANOTHER adapter
             String size = mSizeRange.getText().toString();
-            int[] category;
+            String catStrList = mCategory.getSelectedItemsAsString();
+            int[] category = mCategory.convertStringListToIntList(catStrList, "category", mydb);
+            Log.d("myApp", "saving categories " + catStrList);
             String description = mDescription.getText().toString();
             String cover = "location of cover image"; //TODO once the image saving problem is resolved need to work on this
             String back = "location of back image";
@@ -358,7 +363,6 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
             }else{
                 carryOn = true;
 
-                category = new int[] {1,2}; //TODO get list of category ids
                 //TODO get and set the various variables to pass to the pattern
                 //String num, int brand, String sizeRange, int[] category, String description, String coverImg, String backImg
                 pattern = new Pattern(patternNum, brandID, size, category, description, "directory for cover image", "directory for back image");
@@ -368,7 +372,7 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
                 Pattern p = getArguments().getParcelable("pattern");
                 pattern.setUID(p.getUID());
 
-                mydb.updatePattern(pattern);
+                mydb.updatePattern(pattern); //FIXME when updating categories there is a memory leak
 
                 Toast.makeText(v.getContext(),"Updated " + pattern.getNum(), Toast.LENGTH_SHORT).show();
 
@@ -393,11 +397,13 @@ public class AddEditPatternFragment extends Fragment {  //TODO refactor to allow
         public void onClick(View v) {
             String name = mPatternNum.getText().toString();
             Pattern p = getArguments().getParcelable("pattern");
-            int id = p.getUID();
-            mydb.deletePattern(id);
-            Toast.makeText(v.getContext(), "pattern "+name+" deleted", Toast.LENGTH_SHORT).show();
+            if(p != null){
+                int id = p.getUID();
+                mydb.deletePattern(id);
+                Toast.makeText(v.getContext(), "pattern "+name+" deleted", Toast.LENGTH_SHORT).show();
 
-            getFragmentManager().popBackStack();
+                getFragmentManager().popBackStack();
+            }
         }
     };
 

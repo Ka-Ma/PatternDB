@@ -81,7 +81,7 @@ public class BrandListFragment extends ListFragment implements OnItemClickListen
     private void setList(){
         ArrayList<ListItem> brands = mydb.getAllBrandsDetails();
 
-        BrandListAdapter brandAdapter = new BrandListAdapter(getActivity(), R.layout.listview_item_row_cat_or_brand_lists, brands);
+        EditBrandListAdapter brandAdapter = new EditBrandListAdapter(getActivity(), R.layout.listview_item_row_cat_or_brand_lists, brands);
         setListAdapter(brandAdapter);
     }
 }

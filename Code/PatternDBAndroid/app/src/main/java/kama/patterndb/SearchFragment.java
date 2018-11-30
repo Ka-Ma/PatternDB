@@ -1,7 +1,6 @@
 package kama.patterndb;
 
 import android.app.Fragment;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,9 +10,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Spinner;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,9 +20,9 @@ public class SearchFragment extends Fragment {
     Button mSearchButton;
     Button mBackButton;
     EditText mPatternNum;
+    SelectMultiSpinner mBrand;
     EditText mKeywords;
-    CheckedTextView mCategory;
-    ArrayAdapter<String> adapter;
+    SelectMultiSpinner mCategory;
 
     DBHelper mydb;
 
@@ -57,18 +53,17 @@ public class SearchFragment extends Fragment {
         mydb = new DBHelper(getActivity());
         View v = getActivity().findViewById(R.id.fragment_container);
 
-        //TODO THIS ONE NEXT need to add the multiselectors for brand and category
-
         mPatternNum = v.findViewById(R.id.text_patternNumber); //TODO add a thing to deactivate the other option if this is complete
+
+        mBrand = v.findViewById(R.id.search_spinner_brand);
+        List<String> brandList = mydb.getAllBrandsNames();
+        mBrand.setItems(brandList);
 
         mKeywords = v.findViewById(R.id.text_keyword);
 
         mCategory = v.findViewById(R.id.search_spinner_category);
-
-
-        adapter = new ArrayAdapter<String>(v.getContext(), android.R.layout.select_dialog_multichoice, mydb.getAllCategoriesNames()); //FIXME unable to select more than one
-
-        //mCategory.setAdapter(adapter);
+        List<String> categoryList = mydb.getAllCategoriesNames();
+        mCategory.setItems(categoryList);
 
         mSearchButton = v.findViewById(R.id.button_search);
         mSearchButton.setOnClickListener(new View.OnClickListener() {
@@ -81,7 +76,10 @@ public class SearchFragment extends Fragment {
 
                 searchCriteria.add(mPatternNum.getText().toString());
                 searchCriteria.add(mKeywords.getText().toString());
-                //TODO add brands and categories to searchCritera
+                searchCriteria.add(mBrand.getSelectedItemsAsString());
+                searchCriteria.add(mCategory.getSelectedItemsAsString());
+
+                Log.d("myApp", "search criteria is " + searchCriteria);
 
                 //search button needs to launch new fragment
                 PatternListFragment patternListFragment = PatternListFragment.newInstance(searchCriteria);

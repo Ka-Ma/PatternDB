@@ -22,6 +22,7 @@ public class PatternListFragment extends ListFragment implements OnItemClickList
     View v;
 
     //TODO need to have this fragment update list on return from edit or delete
+    //FIXME when scrolling to the bottom of the list on actual phone it crashes, why?
 
     public static PatternListFragment newInstance(ArrayList<String> searchCriteria){ //TODO I think i need to update this to send the search criteria
         PatternListFragment f = new PatternListFragment();
@@ -80,16 +81,17 @@ public class PatternListFragment extends ListFragment implements OnItemClickList
 
     public void setList(){
         ArrayList<String> searchCriteria = getArguments().getStringArrayList("criteria");
+        //where searchCriteria array is 0:pattern number, 1:keywords, 2:brands, 3:categories
 
         ArrayList<Pattern> patternList = null;
 
-        //if pattern num is not null
+        //if pattern num is not null //TODO check search criteria works as expected
         if(!searchCriteria.get(0).equals("")){
             patternList = (ArrayList) mydb.getPatternByPatternNum(searchCriteria.get(0));
         }else if(!searchCriteria.get(1).equals("")){
             String keywords = searchCriteria.get(1);
-            int[] brands = null; //TODO get from the select list, may be null
-            int[] categories = null; // TODO get from the select list, may be null
+            int[] brands = convertStringListToIntList(searchCriteria.get(2), "brand");
+            int[] categories = convertStringListToIntList(searchCriteria.get(3), "category");
 
             patternList = (ArrayList) mydb.getPatternsMatching(keywords, brands, categories);
         }else{
@@ -99,5 +101,31 @@ public class PatternListFragment extends ListFragment implements OnItemClickList
         PatternAdapter adapter = new PatternAdapter(v.getContext(), R.layout.listview_item_row_pattern, patternList);
 
         setListAdapter(adapter);
+    }
+
+    private int[] convertStringListToIntList(String list, String type){
+        int[] intList = null;
+        ArrayList al = new ArrayList();
+        int index = 0;
+
+        while(index < list.lastIndexOf(",")) {
+            int next = list.indexOf(",", index);
+            al.add(list.substring(index, next));
+            index = next;
+        }
+
+        intList = new int[al.size()];
+        for(int i = 0; i<al.size(); i++){
+            if(type.equals("brand")){
+            intList[i] = mydb.getBrand((String) al.get(i));
+            }
+            else if (type.equals("category")){
+                intList[i] = mydb.getCategory((String) al.get(i));
+            }
+        }
+
+        Log.d("myApp", "this array list is " + intList.toString());
+
+        return intList;
     }
 }
